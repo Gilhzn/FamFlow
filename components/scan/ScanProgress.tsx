@@ -13,9 +13,9 @@ export const SCAN_STEPS = [
 
 /** i18n keys for the product-search phases, in order. */
 export const PRODUCT_STEPS = [
-  "scan.step.upload",
-  "scan.product.step.searching",
-  "scan.product.step.comparing",
+  "scan.product.step.barcode",
+  "scan.product.step.lookup",
+  "scan.product.step.prices",
 ] as const;
 
 interface ScanProgressProps {

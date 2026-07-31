@@ -23,6 +23,14 @@ import {
   ProductOffer,
   ProductSearchResult,
 } from "@/lib/product-search";
+import {
+  decodeBarcode,
+  fetchRealPrices,
+  lookupByBarcode,
+  OffProduct,
+  RealPrice,
+} from "@/lib/product-lookup";
+import ProductLookupView from "@/components/scan/ProductLookupView";
 import { ReceiptText, Tag } from "lucide-react";
 
 type Phase = "capture" | "analyzing" | "review" | "logged";
@@ -73,12 +81,19 @@ export default function ScanPage() {
   const [category, setCategory] = useState<CategoryId>("food");
   const [loggedTx, setLoggedTx] = useState<Transaction | null>(null);
 
-  // Product-photo mode: automated price search + manual override
+  // Product-photo mode: barcode → real product lookup → real prices,
+  // with the labeled simulation only as an offline fallback.
   const [scanMode, setScanMode] = useState<ScanMode>("receipt");
   const [product, setProduct] = useState<ProductSearchResult | null>(null);
   const [productName, setProductName] = useState("");
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
   const [productPrice, setProductPrice] = useState("");
+  const [lookup, setLookup] = useState<
+    | { kind: "real"; product: OffProduct; prices: RealPrice[] }
+    | { kind: "search"; noBarcode: boolean }
+    | { kind: "sim" }
+    | null
+  >(null);
 
   const handleSelect = useCallback((file: File) => {
     setError(null);
@@ -111,6 +126,7 @@ export default function ScanPage() {
     setProductName("");
     setSelectedOfferId(null);
     setProductPrice("");
+    setLookup(null);
   }, []);
 
   const switchScanMode = useCallback(
@@ -122,31 +138,55 @@ export default function ScanPage() {
     [scanMode, reset]
   );
 
-  /** Product photo → automated multi-store price search (labeled mock). */
+  /** Offline fallback: the deterministic country-store simulation. */
+  const runSimFallback = useCallback(async () => {
+    if (!image) return;
+    const result = await mockProductSearch(image.base64, country);
+    setProduct(result);
+    setProductName(result.productName);
+    setCategory(result.category);
+    const best = result.offers[0] ?? null;
+    setSelectedOfferId(best ? best.id : null);
+    setProductPrice(best ? best.price.toFixed(2) : "");
+    setLookup({ kind: "sim" });
+    setPhase("review");
+  }, [image, country]);
+
+  /**
+   * Product photo → REAL identification, free & token-less:
+   * 1. Barcode decode in the browser (no network at all).
+   * 2. Open Food Facts lookup → real product (photo, title, brand).
+   * 3. Open Prices → real recorded store prices, when available.
+   * No barcode / unknown product → real free-text search. Offline → sim.
+   */
   const searchProduct = useCallback(async () => {
     if (!image) return;
     setError(null);
     setPhase("analyzing");
-    setStep(0);
+    setStep(0); // scanning barcode
     try {
-      const request = mockProductSearch(image.base64, country);
-      await sleep(450);
-      setStep(1); // searching images
-      await sleep(650);
-      setStep(2); // comparing prices
-      const result = await request;
-      setProduct(result);
-      setProductName(result.productName);
-      setCategory(result.category);
-      const best = result.offers[0] ?? null;
-      setSelectedOfferId(best ? best.id : null);
-      setProductPrice(best ? best.price.toFixed(2) : "");
+      const code = await decodeBarcode(image.previewUrl);
+      setStep(1); // product lookup
+      if (!code) {
+        await sleep(350);
+        setLookup({ kind: "search", noBarcode: true });
+        setPhase("review");
+        return;
+      }
+      const prod = await lookupByBarcode(code);
+      if (!prod) {
+        setLookup({ kind: "search", noBarcode: false });
+        setPhase("review");
+        return;
+      }
+      setStep(2); // fetching prices
+      const prices = await fetchRealPrices(prod.code);
+      setLookup({ kind: "real", product: prod, prices });
       setPhase("review");
     } catch {
-      setError("scan.errAnalyze");
-      setPhase("capture");
+      await runSimFallback();
     }
-  }, [image, country]);
+  }, [image, runSimFallback]);
 
   const selectOffer = useCallback((o: ProductOffer) => {
     setSelectedOfferId(o.id);
@@ -380,7 +420,30 @@ export default function ScanPage() {
           />
         )}
 
-        {phase === "review" && scanMode === "product" && product && (
+        {phase === "review" && scanMode === "product" && lookup && lookup.kind !== "sim" && (
+          <ProductLookupView
+            noBarcode={lookup.kind === "search" ? lookup.noBarcode : false}
+            initialProduct={lookup.kind === "real" ? lookup.product : null}
+            initialPrices={lookup.kind === "real" ? lookup.prices : []}
+            onNetworkFail={runSimFallback}
+            onLog={(name, amount, cat) => {
+              if (!me) return;
+              const tx = addTransaction({
+                memberId: me.id,
+                amount,
+                category: cat,
+                label: name,
+                source: "scan",
+                items: [{ name, price: amount }],
+              });
+              setLoggedTx(tx);
+              setMode("mock");
+              setPhase("logged");
+            }}
+          />
+        )}
+
+        {phase === "review" && scanMode === "product" && lookup?.kind === "sim" && product && (
           <ProductResults
             productName={productName}
             onNameChange={setProductName}
