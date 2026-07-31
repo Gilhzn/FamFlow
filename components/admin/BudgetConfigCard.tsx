@@ -6,9 +6,12 @@ import { useFam } from "@/lib/store";
 import { inMonth, sum } from "@/lib/insights";
 import { fmtMoney } from "@/lib/format";
 import { CATEGORIES, CategoryId } from "@/lib/types";
+import { useT } from "@/lib/i18n";
+import { fill, Money } from "./i18nNodes";
 import CapInput from "./CapInput";
 
 export default function BudgetConfigCard() {
+  const { t } = useT();
   const settings = useFam((s) => s.settings);
   const transactions = useFam((s) => s.transactions);
   const setMonthlyBudget = useFam((s) => s.setMonthlyBudget);
@@ -43,10 +46,10 @@ export default function BudgetConfigCard() {
         </span>
         <div>
           <h2 className="text-sm font-semibold leading-tight">
-            Budget configuration
+            {t("admin.budget.title")}
           </h2>
           <p className="text-[11px] text-ink-faint">
-            Family-wide budget & per-category caps
+            {t("admin.budget.subtitle")}
           </p>
         </div>
       </div>
@@ -54,18 +57,18 @@ export default function BudgetConfigCard() {
       {/* Family monthly budget — click to edit */}
       <div className="mt-4 rounded-xl bg-surface-2 p-4">
         <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">
-          Family monthly budget
+          {t("admin.budget.familyMonthly")}
         </p>
         {editing ? (
           <div className="mt-1.5 flex items-center gap-2">
-            <div className="relative w-36">
+            <div className="relative w-36" dir="ltr">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-ink-faint">
                 $
               </span>
               <input
                 autoFocus
                 inputMode="numeric"
-                aria-label="Family monthly budget"
+                aria-label={t("admin.budget.familyMonthly")}
                 className="input tabular py-1.5 pl-6 pr-2.5 text-base font-semibold"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value.replace(/[^0-9.]/g, ""))}
@@ -79,7 +82,7 @@ export default function BudgetConfigCard() {
             <button
               onMouseDown={(e) => e.preventDefault()}
               onClick={saveBudget}
-              aria-label="Save budget"
+              aria-label={t("admin.budget.saveAria")}
               className="btn-primary px-3 py-1.5"
             >
               <Check size={15} />
@@ -93,7 +96,7 @@ export default function BudgetConfigCard() {
             }}
             className="group mt-0.5 inline-flex items-center gap-2 rounded-lg text-2xl font-bold tabular transition-colors hover:text-accent"
           >
-            {fmtMoney(budget)}
+            <span dir="ltr">{fmtMoney(budget)}</span>
             <Pencil
               size={14}
               className="text-ink-faint opacity-60 transition-opacity group-hover:opacity-100"
@@ -110,19 +113,26 @@ export default function BudgetConfigCard() {
           />
         </div>
         <p className="mt-1.5 text-xs text-ink-dim">
-          <span className="tabular font-medium text-ink">
-            {fmtMoney(familySpend)}
-          </span>{" "}
-          spent this month
+          {fill(t("admin.budget.spentMonth"), {
+            amt: (
+              <Money className="tabular font-medium text-ink">
+                {fmtMoney(familySpend)}
+              </Money>
+            ),
+          })}
           {overBudget ? (
-            <span className="tabular font-medium text-negative">
+            <span className="font-medium text-negative">
               {" "}
-              · {fmtMoney(familySpend - budget)} over
+              {fill(t("admin.overBy"), {
+                amt: <Money>{fmtMoney(familySpend - budget)}</Money>,
+              })}
             </span>
           ) : (
-            <span className="tabular">
+            <span>
               {" "}
-              · {fmtMoney(budget - familySpend)} left
+              {fill(t("admin.budget.left"), {
+                amt: <Money>{fmtMoney(budget - familySpend)}</Money>,
+              })}
             </span>
           )}
         </p>
@@ -142,20 +152,32 @@ export default function BudgetConfigCard() {
                   {c.emoji}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-medium">{c.label}</p>
+                  <p className="truncate text-[13px] font-medium">
+                    {t(`cat.${c.id}`)}
+                  </p>
                   <p className="text-xs text-ink-dim">
-                    <span className="tabular">{fmtMoney(spend)}</span> spent
                     {cap != null ? (
-                      <span className="tabular"> of {fmtMoney(cap)}</span>
+                      fill(t("admin.budget.catSpent"), {
+                        amt: <Money>{fmtMoney(spend)}</Money>,
+                        cap: <Money>{fmtMoney(cap)}</Money>,
+                      })
                     ) : (
-                      <span className="text-ink-faint"> · uncapped</span>
+                      <>
+                        {fill(t("admin.budget.catSpentNoCap"), {
+                          amt: <Money>{fmtMoney(spend)}</Money>,
+                        })}
+                        <span className="text-ink-faint">
+                          {" "}
+                          {t("admin.budget.uncapped")}
+                        </span>
+                      </>
                     )}
                   </p>
                 </div>
                 <CapInput
                   value={cap}
                   onCommit={(v) => setCategoryCap(c.id, v)}
-                  ariaLabel={`${c.label} monthly cap`}
+                  ariaLabel={t("admin.capAria", { name: t(`cat.${c.id}`) })}
                 />
               </div>
               <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-surface-3">
@@ -171,8 +193,9 @@ export default function BudgetConfigCard() {
               </div>
               {over && (
                 <p className="mt-1.5 text-xs font-medium text-negative">
-                  Over cap by{" "}
-                  <span className="tabular">{fmtMoney(spend - cap)}</span>
+                  {fill(t("admin.budget.overCap"), {
+                    amt: <Money>{fmtMoney(spend - cap)}</Money>,
+                  })}
                 </p>
               )}
             </div>

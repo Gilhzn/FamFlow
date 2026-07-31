@@ -19,20 +19,20 @@ export default function RecentActivity() {
     <section className="card flex min-w-0 flex-col p-5">
       <div className="flex items-center gap-2">
         <Receipt size={16} className="text-accent" />
-        <h2 className="text-sm font-semibold">Recent activity</h2>
+        <h2 className="text-sm font-semibold">{t("dashboard.activity.title")}</h2>
         <Link
           href="/ledger"
-          className="ml-auto inline-flex items-center gap-1 text-xs font-medium text-accent transition-colors hover:brightness-125"
+          className="ms-auto inline-flex items-center gap-1 text-xs font-medium text-accent transition-colors hover:brightness-125"
         >
-          View ledger
-          <ArrowRight size={12} />
+          {t("dashboard.activity.view")}
+          <ArrowRight size={12} className="rtl:rotate-180" />
         </Link>
       </div>
 
       <div className="mt-2 flex flex-1 flex-col">
         {recent.length === 0 && (
           <p className="flex flex-1 items-center justify-center py-8 text-center text-xs text-ink-faint">
-            No transactions yet — add one from the Ledger or Scan a receipt.
+            {t("dashboard.activity.empty")}
           </p>
         )}
         {recent.map((tx, i) => {
@@ -55,7 +55,8 @@ export default function RecentActivity() {
                 <p className="truncate text-[13px] font-medium">{tx.label}</p>
                 <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-ink-faint">
                   <span className="truncate">
-                    {member?.name ?? "Unknown"} · {fmtRelative(tx.ts)}
+                    {member?.name ?? t("dashboard.activity.unknown")} ·{" "}
+                    {fmtRelative(tx.ts, lang)}
                   </span>
                 </p>
               </div>
@@ -67,9 +68,14 @@ export default function RecentActivity() {
                 }}
               >
                 <span aria-hidden>{cat.emoji}</span>
-                <span className="hidden sm:inline">{cat.id}</span>
+                <span className="hidden sm:inline">
+                  {t(`cat.${tx.category}.short`)}
+                </span>
               </span>
-              <span className="tabular shrink-0 text-[13px] font-semibold">
+              <span
+                dir="ltr"
+                className="tabular shrink-0 text-[13px] font-semibold"
+              >
                 {fmtMoney(tx.amount)}
               </span>
             </motion.div>

@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n";
 
 /**
  * Numeric cap editor — commits on blur / Enter, Escape cancels.
  * Empty input commits `null` (= uncapped). Instant optimistic save.
+ * Kept LTR (dir="ltr") so the $ prefix and digits stay put under RTL.
  */
 export default function CapInput({
   value,
@@ -15,6 +17,7 @@ export default function CapInput({
   onCommit: (v: number | null) => void;
   ariaLabel?: string;
 }) {
+  const { t } = useT();
   const [text, setText] = useState(value == null ? "" : String(value));
   const [focused, setFocused] = useState(false);
   // Escape triggers blur, but the blur handler closes over the pre-revert
@@ -33,14 +36,14 @@ export default function CapInput({
   };
 
   return (
-    <div className="relative w-[104px] shrink-0">
+    <div className="relative w-[104px] shrink-0" dir="ltr">
       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-ink-faint">
         $
       </span>
       <input
         aria-label={ariaLabel}
         inputMode="numeric"
-        placeholder="No cap"
+        placeholder={t("admin.capPlaceholder")}
         className="input tabular py-1.5 pl-6 pr-2.5 text-right text-[13px]"
         value={text}
         onFocus={() => setFocused(true)}

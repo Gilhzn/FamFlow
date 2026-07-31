@@ -13,6 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useFam, useCurrentMember } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { CATEGORIES, CategoryId } from "@/lib/types";
 import { fmtMoney } from "@/lib/format";
 import { createPaymentIntent, StripeMockError } from "@/lib/stripe-mock";
@@ -21,9 +22,9 @@ import { BRAND_GRADIENT, BrandWordmark } from "./CardVisual";
 type Phase = "idle" | "tokenizing" | "authorizing" | "succeeded" | "declined";
 
 const STEPS = [
-  { key: "tokenizing", label: "Tokenizing" },
-  { key: "authorizing", label: "Authorizing" },
-  { key: "succeeded", label: "Captured" },
+  { key: "tokenizing", labelKey: "wallet.stage.tokenizing" },
+  { key: "authorizing", labelKey: "wallet.stage.authorizing" },
+  { key: "succeeded", labelKey: "wallet.stage.captured" },
 ] as const;
 
 const PHASE_INDEX: Record<Phase, number> = {
@@ -36,6 +37,7 @@ const PHASE_INDEX: Record<Phase, number> = {
 
 function StageRail({ phase }: { phase: Phase }) {
   const idx = PHASE_INDEX[phase];
+  const { t } = useT();
   return (
     <div className="flex items-center justify-between gap-2 px-1">
       {STEPS.map((s, i) => {
@@ -82,13 +84,13 @@ function StageRail({ phase }: { phase: Phase }) {
                     : "text-ink-faint"
                 }`}
               >
-                {s.label}
+                {t(s.labelKey)}
               </span>
             </div>
             {i < STEPS.length - 1 && (
               <div className="relative -mt-5 h-px flex-1 overflow-hidden rounded bg-surface-3">
                 <motion.div
-                  className="absolute inset-y-0 left-0 bg-positive"
+                  className="absolute inset-y-0 start-0 bg-positive"
                   initial={false}
                   animate={{ width: idx > i || phase === "succeeded" ? "100%" : "0%" }}
                   transition={{ duration: 0.4 }}
@@ -106,6 +108,7 @@ export default function PayPanel() {
   const me = useCurrentMember();
   const cards = useFam((s) => s.cards);
   const addTransaction = useFam((s) => s.addTransaction);
+  const { t } = useT();
 
   const myCards = useMemo(
     () => (me ? cards.filter((c) => c.memberId === me.id) : []),
@@ -117,8 +120,9 @@ export default function PayPanel() {
   const [label, setLabel] = useState("");
   const [category, setCategory] = useState<CategoryId>("food");
   const [phase, setPhase] = useState<Phase>("idle");
-  const [declineMsg, setDeclineMsg] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  // i18n key, translated at render time so a language switch updates it live.
+  const [declineKey, setDeclineKey] = useState<string | null>(null);
+  const [toast, setToast] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -132,7 +136,7 @@ export default function PayPanel() {
 
   async function pay() {
     if (!ready || !me || !selected || inFlight) return;
-    setDeclineMsg(null);
+    setDeclineKey(null);
     setPhase("tokenizing");
     // Card is already vaulted — brief tokenization handshake against the vault.
     await new Promise((r) => setTimeout(r, 450));
@@ -152,18 +156,18 @@ export default function PayPanel() {
         label: label.trim(),
         source: "payment",
       });
-      setToast("Logged to family ledger");
-      setTimeout(() => setToast(null), 3000);
+      setToast(true);
+      setTimeout(() => setToast(false), 3000);
       setTimeout(() => {
         setPhase("idle");
         setAmount("");
         setLabel("");
       }, 1600);
     } catch (err) {
-      setDeclineMsg(
+      setDeclineKey(
         err instanceof StripeMockError
-          ? err.message
-          : "Payment failed — please try again."
+          ? `wallet.stripeErr.${err.code}`
+          : "wallet.err.paymentFailed"
       );
       setPhase("declined");
     }
@@ -177,24 +181,22 @@ export default function PayPanel() {
         <div>
           <h2 className="flex items-center gap-2 text-sm font-semibold">
             <Zap size={15} className="text-accent" />
-            Make a payment
+            {t("wallet.pay.title")}
           </h2>
-          <p className="mt-0.5 text-xs text-ink-faint">
-            Charged in-app, logged to the family ledger instantly
-          </p>
+          <p className="mt-0.5 text-xs text-ink-faint">{t("wallet.pay.subtitle")}</p>
         </div>
         <ShieldCheck size={16} className="text-ink-faint" />
       </div>
 
       {myCards.length === 0 ? (
         <p className="rounded-xl bg-surface-2 px-4 py-6 text-center text-sm text-ink-faint">
-          Add a card above to start paying in-app.
+          {t("wallet.pay.noCards")}
         </p>
       ) : (
         <div className="space-y-4">
           {/* card selector — mini visuals */}
           <div>
-            <p className="mb-2 text-xs font-medium text-ink-dim">Pay with</p>
+            <p className="mb-2 text-xs font-medium text-ink-dim">{t("wallet.pay.with")}</p>
             <div className="flex gap-2 overflow-x-auto pb-1">
               {myCards.map((c) => {
                 const active = selected?.id === c.id;
@@ -203,6 +205,7 @@ export default function PayPanel() {
                     key={c.id}
                     onClick={() => setCardId(c.id)}
                     disabled={inFlight}
+                    dir="ltr"
                     className={`relative h-14 w-24 shrink-0 overflow-hidden rounded-lg p-2 text-left text-white transition-all duration-150 ${
                       active
                         ? "ring-2 ring-accent ring-offset-2 ring-offset-surface-1"
@@ -232,9 +235,10 @@ export default function PayPanel() {
           <div className="grid grid-cols-[110px_1fr] gap-3">
             <div>
               <label className="mb-1.5 block text-xs font-medium text-ink-dim">
-                Amount
+                {t("wallet.pay.amount")}
               </label>
-              <div className="relative">
+              {/* Money entry is a physical-LTR unit: $ sign, digits, padding. */}
+              <div className="relative" dir="ltr">
                 <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-sm text-ink-faint">
                   $
                 </span>
@@ -252,11 +256,11 @@ export default function PayPanel() {
             </div>
             <div className="min-w-0">
               <label className="mb-1.5 block text-xs font-medium text-ink-dim">
-                Merchant / label
+                {t("wallet.pay.merchant")}
               </label>
               <input
                 className="input"
-                placeholder="e.g. SuperMart Groceries"
+                placeholder={t("wallet.pay.merchantPh")}
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 disabled={inFlight}
@@ -266,7 +270,9 @@ export default function PayPanel() {
 
           {/* category chips */}
           <div>
-            <p className="mb-2 text-xs font-medium text-ink-dim">Category</p>
+            <p className="mb-2 text-xs font-medium text-ink-dim">
+              {t("wallet.pay.category")}
+            </p>
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map((c) => {
                 const active = category === c.id;
@@ -288,7 +294,7 @@ export default function PayPanel() {
                       className="h-1.5 w-1.5 rounded-full"
                       style={{ background: c.color }}
                     />
-                    {c.label.split(" ")[0].replace("&", "")}
+                    {t(`cat.${c.id}.short`)}
                   </button>
                 );
               })}

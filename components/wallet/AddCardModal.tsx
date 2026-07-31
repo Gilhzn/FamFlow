@@ -234,20 +234,20 @@ export default function AddCardModal({
             className="w-full max-w-md rounded-2xl bg-surface-1 p-5 shadow-pop sm:p-6"
             role="dialog"
             aria-modal="true"
-            aria-label="Add card"
+            aria-label={t("wallet.addModal.title")}
           >
             <div className="mb-5 flex items-start justify-between">
               <div>
-                <h2 className="text-base font-semibold">Add a card</h2>
+                <h2 className="text-base font-semibold">{t("wallet.addModal.title")}</h2>
                 <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-faint">
                   <Lock size={11} />
-                  Tokenized locally — the number never touches the ledger
+                  {t("wallet.addModal.security")}
                 </p>
               </div>
               <button
                 onClick={onClose}
                 disabled={busy}
-                aria-label="Close"
+                aria-label={t("common.close")}
                 className="rounded-lg p-1.5 text-ink-faint transition-colors hover:bg-surface-2 hover:text-ink disabled:pointer-events-none disabled:opacity-40"
               >
                 <X size={16} />
@@ -257,9 +257,11 @@ export default function AddCardModal({
             <div className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-ink-dim">
-                  Card number
+                  {t("wallet.cardNumber")}
                 </label>
-                <div className="relative">
+                {/* Card number stays a physical-LTR unit: input forced LTR,
+                    badge pinned to the physical right to match its padding. */}
+                <div className="relative" dir="ltr">
                   <input
                     ref={numberRef}
                     className={`input tabular pr-16 ${
@@ -284,9 +286,10 @@ export default function AddCardModal({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-ink-dim">
-                    Expiry
+                    {t("wallet.expiry")}
                   </label>
                   <input
+                    dir="ltr"
                     className={`input tabular ${errors.exp ? "ring-1 !ring-negative" : ""}`}
                     inputMode="numeric"
                     autoComplete="cc-exp"
@@ -299,9 +302,10 @@ export default function AddCardModal({
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-ink-dim">
-                    CVC
+                    {t("wallet.cvc")}
                   </label>
                   <input
+                    dir="ltr"
                     className={`input tabular ${errors.cvc ? "ring-1 !ring-negative" : ""}`}
                     inputMode="numeric"
                     autoComplete="cc-csc"
@@ -331,10 +335,10 @@ export default function AddCardModal({
                 {busy ? (
                   <>
                     <Loader2 size={15} className="animate-spin" />
-                    Tokenizing…
+                    {t("wallet.tokenizing")}
                   </>
                 ) : (
-                  "Save card"
+                  t("wallet.saveCard")
                 )}
               </button>
 
@@ -344,7 +348,10 @@ export default function AddCardModal({
                 className="mx-auto flex items-center gap-1.5 text-xs font-medium text-accent transition-opacity hover:opacity-80 disabled:opacity-40"
               >
                 <Sparkles size={12} />
-                Use test card 4242 4242 4242 4242
+                {t("wallet.useTestCard")}
+                <span dir="ltr" className="tabular">
+                  4242 4242 4242 4242
+                </span>
               </button>
             </div>
           </motion.div>

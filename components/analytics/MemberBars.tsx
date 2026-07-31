@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Users } from "lucide-react";
+import { useT } from "@/lib/i18n";
 import { Member } from "@/lib/types";
 import { fmtMoney } from "@/lib/format";
 
@@ -10,6 +11,7 @@ export default function MemberBars({
 }: {
   rows: Array<{ member: Member; value: number }>;
 }) {
+  const { t } = useT();
   const max = Math.max(...rows.map((r) => r.value), 0);
 
   if (max === 0) {
@@ -18,7 +20,7 @@ export default function MemberBars({
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface-2 text-ink-faint">
           <Users size={20} />
         </div>
-        <p className="text-sm text-ink-faint">Nobody spent anything this period.</p>
+        <p className="text-sm text-ink-faint">{t("analytics.nobodySpent")}</p>
       </div>
     );
   }
@@ -39,11 +41,11 @@ export default function MemberBars({
               <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
                 {member.name}
               </span>
-              <span className="tabular shrink-0 text-[13px] font-semibold">
+              <span dir="ltr" className="tabular shrink-0 text-[13px] font-semibold">
                 {fmtMoney(value, { compact: true })}
               </span>
             </div>
-            <div className="ml-[34px] mt-1.5 h-2 overflow-hidden rounded-full bg-surface-2">
+            <div className="ms-[34px] mt-1.5 h-2 overflow-hidden rounded-full bg-surface-2">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}

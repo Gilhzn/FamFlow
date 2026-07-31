@@ -10,6 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { ChartNoAxesColumn } from "lucide-react";
+import { useT } from "@/lib/i18n";
 import { CATEGORY_MAP } from "@/lib/types";
 import { fmtMoney } from "@/lib/format";
 import { Bucket, Granularity, STACK_ORDER, tickMoney, xTicks } from "./periods";
@@ -52,14 +53,18 @@ function ChartTip({
   active?: boolean;
   payload?: Array<{ payload: Bucket }>;
 }) {
+  const { t, lang } = useT();
   if (!active || !payload?.length) return null;
   const b = payload[0].payload;
   const rows = STACK_ORDER.filter((k) => b[k] > 0);
   return (
-    <div className="min-w-[150px] rounded-xl border border-line bg-surface-3 px-3 py-2.5 shadow-pop">
+    <div
+      dir={lang === "he" ? "rtl" : "ltr"}
+      className="min-w-[150px] rounded-xl border border-line bg-surface-3 px-3 py-2.5 shadow-pop"
+    >
       <p className="text-xs font-semibold text-ink">{b.tip}</p>
       {rows.length === 0 ? (
-        <p className="mt-1 text-xs text-ink-faint">No spending</p>
+        <p className="mt-1 text-xs text-ink-faint">{t("analytics.noSpending")}</p>
       ) : (
         <>
           <div className="mt-1.5 space-y-1">
@@ -69,16 +74,18 @@ function ChartTip({
                   className="h-2 w-2 shrink-0 rounded-sm"
                   style={{ background: CATEGORY_MAP[k].color }}
                 />
-                <span className="flex-1 text-ink-dim">
-                  {CATEGORY_MAP[k].label.split(" ")[0]}
+                <span className="flex-1 text-ink-dim">{t(`cat.${k}.short`)}</span>
+                <span dir="ltr" className="tabular font-medium text-ink">
+                  {fmtMoney(b[k])}
                 </span>
-                <span className="tabular font-medium text-ink">{fmtMoney(b[k])}</span>
               </div>
             ))}
           </div>
           <div className="mt-1.5 flex items-center justify-between border-t border-line pt-1.5 text-xs">
-            <span className="text-ink-faint">Total</span>
-            <span className="tabular font-semibold text-ink">{fmtMoney(b.total)}</span>
+            <span className="text-ink-faint">{t("common.total")}</span>
+            <span dir="ltr" className="tabular font-semibold text-ink">
+              {fmtMoney(b.total)}
+            </span>
           </div>
         </>
       )}
@@ -95,6 +102,8 @@ export default function SpendChart({
   granularity: Granularity;
   total: number;
 }) {
+  const { t, lang } = useT();
+
   if (total === 0) {
     return (
       <div className="flex h-[260px] flex-col items-center justify-center gap-3 text-center">
@@ -102,9 +111,11 @@ export default function SpendChart({
           <ChartNoAxesColumn size={22} />
         </div>
         <div>
-          <p className="text-sm font-medium text-ink-dim">No spending this period</p>
+          <p className="text-sm font-medium text-ink-dim">
+            {t("analytics.noSpendingPeriod")}
+          </p>
           <p className="mt-0.5 text-xs text-ink-faint">
-            Transactions will appear here the moment they land.
+            {t("analytics.noSpendingHint")}
           </p>
         </div>
       </div>
@@ -115,7 +126,8 @@ export default function SpendChart({
 
   return (
     <div>
-      <div className="h-[260px] w-full">
+      {/* recharts is not RTL-aware — the chart itself always renders LTR. */}
+      <div dir="ltr" className="h-[260px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={buckets}
@@ -128,7 +140,11 @@ export default function SpendChart({
               ticks={ticks}
               interval={0}
               tickFormatter={
-                granularity === "year" ? (v: string) => v.charAt(0) : undefined
+                // Year view: single letters in EN; HE labels are already
+                // short Hebrew month names, shown as-is.
+                granularity === "year" && lang !== "he"
+                  ? (v: string) => v.charAt(0)
+                  : undefined
               }
               tickLine={false}
               axisLine={false}
@@ -170,7 +186,7 @@ export default function SpendChart({
               className="h-2 w-2 rounded-sm"
               style={{ background: CATEGORY_MAP[k].color }}
             />
-            {CATEGORY_MAP[k].label.split(" ")[0]}
+            {t(`cat.${k}.short`)}
           </span>
         ))}
       </div>

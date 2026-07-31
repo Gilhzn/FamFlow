@@ -2,12 +2,15 @@
 
 import { ShieldCheck, ShieldOff, Users } from "lucide-react";
 import { useFam, useCurrentMember } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import BudgetConfigCard from "@/components/admin/BudgetConfigCard";
 import MemberCard from "@/components/admin/MemberCard";
 import AnomalyCenter from "@/components/admin/AnomalyCenter";
 import BroadcastCard from "@/components/admin/BroadcastCard";
+import MembersManageCard from "@/components/admin/MembersManageCard";
 
 export default function AdminPage() {
+  const { t } = useT();
   const me = useCurrentMember();
   const members = useFam((s) => s.members);
   const familyName = useFam((s) => s.settings.familyName);
@@ -19,8 +22,8 @@ export default function AdminPage() {
           <ShieldOff size={24} />
         </span>
         <div>
-          <p className="text-sm font-semibold">Admin access only</p>
-          <p className="mt-1 text-sm text-ink-faint">Ask a parent</p>
+          <p className="text-sm font-semibold">{t("admin.lockTitle")}</p>
+          <p className="mt-1 text-sm text-ink-faint">{t("admin.lockBody")}</p>
         </div>
       </div>
     );
@@ -34,16 +37,13 @@ export default function AdminPage() {
           <div className="flex items-center gap-2 text-accent">
             <ShieldCheck size={16} />
             <p className="text-[11px] font-semibold uppercase tracking-widest">
-              Admin governance
+              {t("admin.kicker")}
             </p>
           </div>
           <h1 className="mt-1 text-xl font-bold md:text-2xl">
-            {familyName} command center
+            {t("admin.title", { family: familyName })}
           </h1>
-          <p className="mt-1 text-sm text-ink-dim">
-            Budgets, caps, velocity monitoring and anomaly review — every change
-            syncs live to the whole family.
-          </p>
+          <p className="mt-1 text-sm text-ink-dim">{t("admin.subtitle")}</p>
         </header>
 
         {/* Budget config + broadcast */}
@@ -52,12 +52,17 @@ export default function AdminPage() {
           <BroadcastCard />
         </div>
 
+        {/* Family members management */}
+        <div className="mt-4 md:mt-5">
+          <MembersManageCard />
+        </div>
+
         {/* Member monitoring */}
         <section className="mt-7 animate-fade-up">
           <div className="flex items-center gap-2 text-ink-dim">
             <Users size={15} />
             <h2 className="text-sm font-semibold text-ink">
-              Member monitoring
+              {t("admin.monitoring")}
             </h2>
             <span className="chip bg-surface-2 text-ink-faint tabular">
               {members.length}
