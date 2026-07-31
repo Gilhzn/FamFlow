@@ -47,9 +47,10 @@ export default function QuickAddBar() {
             <input
               ref={amountRef}
               value={amount}
-              onChange={(e) =>
-                setAmount(e.target.value.replace(/[^0-9.]/g, ""))
-              }
+              onChange={(e) => {
+                const clean = e.target.value.replace(/[^0-9.]/g, "");
+                if (/^\d*\.?\d{0,2}$/.test(clean)) setAmount(clean);
+              }}
               onKeyDown={onKeyDown}
               inputMode="decimal"
               placeholder="0.00"
@@ -77,7 +78,7 @@ export default function QuickAddBar() {
 
         <div className="flex items-center gap-2.5">
           <div
-            role="radiogroup"
+            role="group"
             aria-label="Category"
             className="grid flex-1 grid-cols-4 gap-1 rounded-xl bg-surface-2 p-1"
           >
@@ -86,8 +87,7 @@ export default function QuickAddBar() {
               return (
                 <button
                   key={c.id}
-                  role="radio"
-                  aria-checked={sel}
+                  aria-pressed={sel}
                   onClick={() => setCat(c.id)}
                   className={`flex items-center justify-center gap-1.5 truncate rounded-lg px-1.5 py-2 text-xs font-medium transition-all duration-150 ${
                     sel ? "" : "text-ink-dim hover:bg-surface-3 hover:text-ink"

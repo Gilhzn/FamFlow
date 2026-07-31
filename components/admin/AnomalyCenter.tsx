@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, ShieldAlert, ShieldCheck } from "lucide-react";
 import { useFam } from "@/lib/store";
 import { detectAnomalies } from "@/lib/insights";
 import { fmtDay, fmtMoney } from "@/lib/format";
+
+const REVIEWED_KEY = "famflow_reviewed_anomalies_v1";
 
 export default function AnomalyCenter() {
   const members = useFam((s) => s.members);
@@ -15,7 +17,46 @@ export default function AnomalyCenter() {
   const settings = useFam((s) => s.settings);
 
   // Anomaly ids regenerate on every detection pass — key reviews by txId+kind.
-  const [reviewed, setReviewed] = useState<Set<string>>(new Set());
+  // Persisted to localStorage so reviews survive navigation/reload; the
+  // "storage" event mirrors them to other open tabs (matching FamSync's
+  // cross-tab behavior).
+  const [reviewed, setReviewed] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const raw = localStorage.getItem(REVIEWED_KEY);
+      const arr = raw ? JSON.parse(raw) : [];
+      return new Set(
+        Array.isArray(arr) ? arr.filter((v) => typeof v === "string") : []
+      );
+    } catch {
+      return new Set();
+    }
+  });
+
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key !== REVIEWED_KEY || e.newValue == null) return;
+      try {
+        const arr = JSON.parse(e.newValue);
+        if (Array.isArray(arr)) {
+          setReviewed(new Set(arr.filter((v) => typeof v === "string")));
+        }
+      } catch {}
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  function markReviewed(key: string) {
+    setReviewed((prev) => {
+      const next = new Set(prev);
+      next.add(key);
+      try {
+        localStorage.setItem(REVIEWED_KEY, JSON.stringify([...next]));
+      } catch {}
+      return next;
+    });
+  }
 
   const anomalies = useMemo(
     () => detectAnomalies({ members, transactions, alerts, cards, settings }),
@@ -134,7 +175,7 @@ export default function AnomalyCenter() {
                     </div>
                     <button
                       onClick={() =>
-                        setReviewed((s) => new Set(s).add(a.txId + a.kind))
+                        markReviewed(a.txId + a.kind)
                       }
                       className="btn-ghost shrink-0 self-start px-3 py-1.5 text-xs sm:self-center"
                     >

@@ -11,18 +11,25 @@ function DeltaChip({ pct }: { pct: number | null }) {
       </span>
     );
   }
-  const up = pct >= 0;
+  if (Math.round(Math.abs(pct) * 10) === 0) {
+    return (
+      <span className="chip bg-surface-2 text-ink-faint" title="Flat vs previous period">
+        0%
+      </span>
+    );
+  }
+  const up = pct > 0;
   const color = up ? "var(--negative)" : "var(--positive)";
   return (
     <span
-      className="chip tabular font-semibold"
+      className="chip tabular max-w-full font-semibold"
       style={{
         color,
         background: `color-mix(in srgb, ${color} 13%, transparent)`,
       }}
     >
       {up ? "▲" : "▼"} {up ? "+" : "−"}
-      {Math.abs(pct) >= 1000 ? Math.round(Math.abs(pct)).toLocaleString("en-US") : Math.abs(pct).toFixed(Math.abs(pct) < 10 ? 1 : 0)}
+      {Math.abs(pct) > 999 ? ">999" : Math.abs(pct).toFixed(Math.abs(pct) < 10 ? 1 : 0)}
       %
     </span>
   );

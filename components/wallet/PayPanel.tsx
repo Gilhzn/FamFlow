@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
@@ -118,6 +119,8 @@ export default function PayPanel() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [declineMsg, setDeclineMsg] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const selected =
     myCards.find((c) => c.id === cardId) ?? myCards[0] ?? null;
@@ -377,23 +380,27 @@ export default function PayPanel() {
         </div>
       )}
 
-      {/* success toast */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className="fixed inset-x-0 bottom-20 z-50 flex justify-center px-4 md:bottom-8 md:left-60"
-          >
-            <div className="flex items-center gap-2 rounded-xl bg-surface-3 px-4 py-2.5 text-sm font-medium shadow-pop">
-              <CheckCircle2 size={16} className="text-positive" />
-              {toast}
-            </div>
-          </motion.div>
+      {/* success toast — portaled so no animated ancestor can capture it */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {toast && (
+              <motion.div
+                initial={{ opacity: 0, y: 24, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="fixed inset-x-0 bottom-20 z-50 flex justify-center px-4 md:bottom-8 md:left-60"
+              >
+                <div className="flex items-center gap-2 rounded-xl bg-surface-3 px-4 py-2.5 text-sm font-medium shadow-pop">
+                  <CheckCircle2 size={16} className="text-positive" />
+                  {toast}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
         )}
-      </AnimatePresence>
     </section>
   );
 }

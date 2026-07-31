@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Receipt } from "lucide-react";
+import Link from "next/link";
 import { useFam } from "@/lib/store";
 import { fmtMoney, fmtRelative } from "@/lib/format";
 import { CATEGORY_MAP } from "@/lib/types";
@@ -11,14 +12,12 @@ export default function PaymentActivity() {
   const transactions = useFam((s) => s.transactions);
   const members = useFam((s) => s.members);
 
-  const payments = useMemo(
-    () =>
-      transactions
-        .filter((t) => t.source === "payment")
-        .sort((a, b) => b.ts - a.ts)
-        .slice(0, 10),
-    [transactions]
-  );
+  const { payments, totalCount } = useMemo(() => {
+    const all = transactions
+      .filter((t) => t.source === "payment")
+      .sort((a, b) => b.ts - a.ts);
+    return { payments: all.slice(0, 10), totalCount: all.length };
+  }, [transactions]);
 
   const memberOf = (id: string) => members.find((m) => m.id === id);
 
@@ -42,7 +41,11 @@ export default function PaymentActivity() {
           <AnimatePresence initial={false}>
             {payments.map((t) => {
               const m = memberOf(t.memberId);
-              const cat = CATEGORY_MAP[t.category];
+              const cat = CATEGORY_MAP[t.category] ?? {
+                color: "var(--surface-3)",
+                label: "Other",
+                emoji: "•",
+              };
               return (
                 <motion.li
                   layout
@@ -71,13 +74,21 @@ export default function PaymentActivity() {
                     </p>
                   </div>
                   <span className="tabular shrink-0 text-[13px] font-semibold">
-                    {fmtMoney(t.amount)}
+                    {fmtMoney(t.amount, { cents: true })}
                   </span>
                 </motion.li>
               );
             })}
           </AnimatePresence>
         </ul>
+      )}
+      {totalCount > 10 && (
+        <Link
+          href="/ledger"
+          className="mt-3 block text-center text-xs font-medium text-accent transition-opacity hover:opacity-80"
+        >
+          View all {totalCount} payments in the ledger →
+        </Link>
       )}
     </section>
   );

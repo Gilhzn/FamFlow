@@ -31,8 +31,13 @@ interface ResultsSheetProps {
   category: CategoryId;
   onCategoryChange: (c: CategoryId) => void;
   mode: "live" | "mock" | null;
-  logging: boolean;
   onLog: () => void;
+}
+
+function sanitizePrice(v: string): string {
+  const clean = v.replace(/[^0-9.]/g, "");
+  // Single decimal point, max two decimals — what you see is what gets logged.
+  return /^\d*\.?\d{0,2}$/.test(clean) ? clean : clean.slice(0, -1);
 }
 
 export default function ResultsSheet({
@@ -45,7 +50,6 @@ export default function ResultsSheet({
   category,
   onCategoryChange,
   mode,
-  logging,
   onLog,
 }: ResultsSheetProps) {
   const total = rowTotal(rows);
@@ -127,7 +131,7 @@ export default function ResultsSheet({
                       value={row.price}
                       onChange={(e) =>
                         onRowChange(row.id, {
-                          price: e.target.value.replace(/[^0-9.]/g, ""),
+                          price: sanitizePrice(e.target.value),
                         })
                       }
                       inputMode="decimal"
@@ -235,7 +239,7 @@ export default function ResultsSheet({
         </div>
         <button
           onClick={onLog}
-          disabled={logging || total <= 0 || !merchant.trim()}
+          disabled={total <= 0 || !merchant.trim()}
           className="btn-primary w-full !py-3"
         >
           Log {fmtMoney(total)} to ledger

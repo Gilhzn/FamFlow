@@ -45,9 +45,11 @@ const config: Config = {
         glow: "0 0 24px var(--accent-soft)",
       },
       animation: {
-        "fade-up": "fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) both",
-        "fade-in": "fadeIn 0.25s ease both",
-        "scale-in": "scaleIn 0.2s cubic-bezier(0.16,1,0.3,1) both",
+        // fill-mode backwards (not both/forwards): a filled transform keeps the
+        // element a containing block for fixed descendants even at identity.
+        "fade-up": "fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) backwards",
+        "fade-in": "fadeIn 0.25s ease backwards",
+        "scale-in": "scaleIn 0.2s cubic-bezier(0.16,1,0.3,1) backwards",
         "pulse-dot": "pulseDot 2s ease-in-out infinite",
         shimmer: "shimmer 1.6s linear infinite",
       },

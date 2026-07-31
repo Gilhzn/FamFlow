@@ -125,9 +125,9 @@ export default function ScanPage() {
         PRODUCT_REGISTRY
       );
       const nextRows: EditableRow[] = matches.map((m) => {
-        const prefill = m.matched && m.historicalPrice != null
-          ? m.historicalPrice
-          : m.visionPrice;
+        // The receipt is the source of truth: prefill the vision-extracted
+        // price and keep the historical price purely as a comparison badge.
+        const prefill = m.visionPrice ?? m.historicalPrice;
         return {
           id: uid("row"),
           name: m.name,
@@ -176,17 +176,19 @@ export default function ScanPage() {
 
   const logToLedger = useCallback(() => {
     if (!me) return;
-    const total = Math.round(rowTotal(rows) * 100) / 100;
-    if (total <= 0 || !merchant.trim()) return;
-
+    // Priced-but-unnamed rows are kept as "Unnamed item" so the logged
+    // amount always equals the sum of the line items shown.
     const items: ReceiptItem[] = rows
-      .filter((r) => r.name.trim() && isFinite(parseFloat(r.price)))
+      .filter((r) => isFinite(parseFloat(r.price)) && parseFloat(r.price) > 0)
       .map((r) => ({
-        name: r.name.trim(),
+        name: r.name.trim() || "Unnamed item",
         price: Math.round(parseFloat(r.price) * 100) / 100,
         historicalPrice: r.historicalPrice,
         matched: r.matched,
       }));
+    const total =
+      Math.round(items.reduce((a, it) => a + it.price, 0) * 100) / 100;
+    if (total <= 0 || !merchant.trim()) return;
 
     const tx = addTransaction({
       memberId: me.id,
@@ -249,7 +251,6 @@ export default function ScanPage() {
             category={category}
             onCategoryChange={setCategory}
             mode={mode}
-            logging={false}
             onLog={logToLedger}
           />
         )}

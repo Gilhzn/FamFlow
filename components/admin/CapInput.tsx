@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
- * Numeric cap editor — commits on blur / Enter.
+ * Numeric cap editor — commits on blur / Enter, Escape cancels.
  * Empty input commits `null` (= uncapped). Instant optimistic save.
  */
 export default function CapInput({
@@ -17,6 +17,9 @@ export default function CapInput({
 }) {
   const [text, setText] = useState(value == null ? "" : String(value));
   const [focused, setFocused] = useState(false);
+  // Escape triggers blur, but the blur handler closes over the pre-revert
+  // text — this flag makes the resulting blur a no-op instead of a commit.
+  const canceling = useRef(false);
 
   useEffect(() => {
     if (!focused) setText(value == null ? "" : String(value));
@@ -43,12 +46,18 @@ export default function CapInput({
         onFocus={() => setFocused(true)}
         onBlur={() => {
           setFocused(false);
+          if (canceling.current) {
+            canceling.current = false;
+            setText(value == null ? "" : String(value));
+            return;
+          }
           commit();
         }}
         onChange={(e) => setText(e.target.value.replace(/[^0-9.]/g, ""))}
         onKeyDown={(e) => {
           if (e.key === "Enter") (e.target as HTMLInputElement).blur();
           if (e.key === "Escape") {
+            canceling.current = true;
             setText(value == null ? "" : String(value));
             (e.target as HTMLInputElement).blur();
           }

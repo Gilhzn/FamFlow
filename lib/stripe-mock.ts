@@ -50,7 +50,12 @@ export function detectBrand(number: string): CardBrand | null {
   if (d.length === 0) return null;
   if (/^3[47]/.test(d)) return "amex";
   if (/^4/.test(d)) return "visa";
-  if (/^5/.test(d)) return "mastercard";
+  // Mastercard: classic 51–55 plus the 2221–2720 (2-series) range.
+  if (/^5[1-5]/.test(d)) return "mastercard";
+  if (/^2/.test(d)) {
+    const prefix = parseInt(d.slice(0, 4).padEnd(4, "0"), 10);
+    if (prefix >= 2221 && prefix <= 2720) return "mastercard";
+  }
   return null;
 }
 

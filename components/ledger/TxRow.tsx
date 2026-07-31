@@ -40,6 +40,8 @@ export default function TxRow({
   const [armed, setArmed] = useState(false);
   const pressTimer = useRef<number | null>(null);
   const armTimer = useRef<number | null>(null);
+  const suppressClick = useRef(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const cat = CATEGORY_MAP[tx.category];
   const SourceIcon = SOURCE_ICON[tx.source];
   const hasItems = !!tx.items && tx.items.length > 0;
@@ -67,6 +69,23 @@ export default function TxRow({
     []
   );
 
+  // Tapping anywhere outside the row hides a touch-revealed delete button.
+  useEffect(() => {
+    if (!touchRevealed) return;
+    function onOutside(e: TouchEvent | MouseEvent) {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
+        setTouchRevealed(false);
+        setArmed(false);
+      }
+    }
+    document.addEventListener("touchstart", onOutside);
+    document.addEventListener("mousedown", onOutside);
+    return () => {
+      document.removeEventListener("touchstart", onOutside);
+      document.removeEventListener("mousedown", onOutside);
+    };
+  }, [touchRevealed]);
+
   function handleDeleteClick(e: React.MouseEvent) {
     e.stopPropagation();
     if (!armed) {
@@ -90,11 +109,24 @@ export default function TxRow({
       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
       style={{ overflow: "hidden" }}
       className="border-b border-line last:border-0"
+      ref={rootRef}
     >
       <div
         role={hasItems ? "button" : undefined}
         tabIndex={hasItems ? 0 : undefined}
-        onClick={hasItems ? () => setExpanded((v) => !v) : undefined}
+        onClick={
+          hasItems
+            ? () => {
+                // A long-press that revealed the delete button must not also
+                // toggle the receipt expansion on finger release.
+                if (suppressClick.current) {
+                  suppressClick.current = false;
+                  return;
+                }
+                setExpanded((v) => !v);
+              }
+            : undefined
+        }
         onKeyDown={
           hasItems
             ? (e) => {
@@ -108,10 +140,10 @@ export default function TxRow({
         onTouchStart={() => {
           if (!canDelete) return;
           clearPress();
-          pressTimer.current = window.setTimeout(
-            () => setTouchRevealed((v) => !v),
-            450
-          );
+          pressTimer.current = window.setTimeout(() => {
+            suppressClick.current = true;
+            setTouchRevealed((v) => !v);
+          }, 450);
         }}
         onTouchEnd={clearPress}
         onTouchMove={clearPress}
@@ -164,7 +196,7 @@ export default function TxRow({
           aria-label={SOURCE_LABEL[tx.source]}
         />
         <span className="tabular shrink-0 text-sm font-semibold">
-          {fmtMoney(tx.amount)}
+          {fmtMoney(tx.amount, { cents: true })}
         </span>
 
         {canDelete && (
@@ -234,7 +266,7 @@ export default function TxRow({
                       </span>
                     )}
                     <span className="tabular shrink-0 font-medium">
-                      {fmtMoney(it.price)}
+                      {fmtMoney(it.price, { cents: true })}
                     </span>
                   </div>
                 );

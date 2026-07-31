@@ -104,10 +104,11 @@ export default function CardVisual({ card, holderName, ownerLabel, onRemove }: P
         }}
       />
 
+      {/* Top-right corner is reserved for the remove button; the brand
+          wordmark lives bottom-right so the two never collide. */}
       <div className="relative flex h-full flex-col justify-between p-4 sm:p-5">
         <div className="flex items-start justify-between">
           <ChipGlyph />
-          <BrandWordmark brand={card.brand} className="drop-shadow" />
         </div>
 
         <p className="tabular text-base font-medium tracking-[0.14em] drop-shadow-sm sm:text-lg">
@@ -126,9 +127,12 @@ export default function CardVisual({ card, holderName, ownerLabel, onRemove }: P
               <p className="mt-0.5 truncate text-[10px] text-white/60">{ownerLabel}</p>
             )}
           </div>
-          <div className="text-right">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-white/60">Exp</p>
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <BrandWordmark brand={card.brand} className="drop-shadow" />
             <p className="tabular text-[13px] font-semibold">
+              <span className="mr-1 text-[9px] uppercase tracking-[0.2em] text-white/60">
+                Exp
+              </span>
               {String(card.expMonth).padStart(2, "0")}/{String(card.expYear).slice(-2)}
             </p>
           </div>

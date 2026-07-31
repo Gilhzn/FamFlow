@@ -203,12 +203,12 @@ export default function LedgerPage() {
         <div className="mt-2">
           {groups.map(([key, g]) => (
             <section key={key}>
-              <div className="sticky top-[53px] z-10 flex items-baseline justify-between bg-surface-0/85 px-1 py-2 backdrop-blur-md md:top-0">
+              <div className="sticky top-[53px] z-10 flex items-baseline justify-between bg-surface-0/95 px-1 py-2 backdrop-blur-md md:top-0">
                 <h2 className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
                   {dayLabel(g.ts)}
                 </h2>
                 <span className="tabular text-xs font-medium text-ink-dim">
-                  {fmtMoney(dayTotals.get(key) ?? 0)}
+                  {fmtMoney(dayTotals.get(key) ?? 0, { cents: true })}
                 </span>
               </div>
               <div className="card overflow-hidden">

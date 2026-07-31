@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCheck, Megaphone, Send } from "lucide-react";
 import { useFam, useCurrentMember } from "@/lib/store";
@@ -18,6 +18,13 @@ export default function BroadcastCard() {
   const pushAlert = useFam((s) => s.pushAlert);
   const me = useCurrentMember();
   const [sent, setSent] = useState(false);
+  const sentTimer = useRef<number | null>(null);
+  useEffect(
+    () => () => {
+      if (sentTimer.current !== null) window.clearTimeout(sentTimer.current);
+    },
+    []
+  );
 
   const recent = useMemo(
     () => [...alerts].sort((a, b) => b.ts - a.ts).slice(0, 10),
@@ -33,7 +40,8 @@ export default function BroadcastCard() {
       memberId: me?.id,
     });
     setSent(true);
-    window.setTimeout(() => setSent(false), 2500);
+    if (sentTimer.current !== null) window.clearTimeout(sentTimer.current);
+    sentTimer.current = window.setTimeout(() => setSent(false), 2500);
   };
 
   return (
@@ -81,12 +89,12 @@ export default function BroadcastCard() {
       </button>
 
       <p className="mt-4 text-[11px] font-medium uppercase tracking-wide text-ink-faint">
-        Recent alerts
+        Recent family alerts (all sources)
       </p>
       <div className="mt-1.5 max-h-64 flex-1 overflow-y-auto pr-1">
         {recent.length === 0 && (
           <p className="py-6 text-center text-xs text-ink-faint">
-            No alerts yet — send a test broadcast above.
+            No family alerts yet — governance rules and broadcasts will appear here.
           </p>
         )}
         {recent.map((a) => (

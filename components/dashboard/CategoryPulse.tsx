@@ -41,7 +41,7 @@ export default function CategoryPulse() {
             <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${pct != null ? Math.min(100, pct) : 100}%` }}
+                animate={{ width: `${pct != null ? Math.min(100, pct) : 0}%` }}
                 transition={{
                   duration: 0.7,
                   ease: [0.16, 1, 0.3, 1],

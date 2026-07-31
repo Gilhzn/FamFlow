@@ -54,7 +54,11 @@ function CapRing({
         className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold tabular"
         style={{ color: over ? "var(--negative)" : undefined }}
       >
-        {pct == null ? "—" : `${Math.round(pct * 100)}%`}
+        {pct == null
+          ? "—"
+          : pct > 9.99
+            ? "999%+"
+            : `${Math.round(pct * 100)}%`}
       </span>
     </div>
   );
@@ -89,7 +93,10 @@ export default function MemberCard({ member }: { member: Member }) {
   const cap = member.monthlyCap;
   const pct = cap != null && cap > 0 ? spend / cap : null;
   const over = cap != null && spend > cap;
-  const burst = velocity.last24 > 0 && velocity.last24 > velocity.dailyAvg * 3;
+  // Mirrors runGovernanceChecks: needs a real baseline and a meaningful spend.
+  const burst =
+    velocity.dailyAvg > 0 &&
+    velocity.last24 > Math.max(40, velocity.dailyAvg * 3);
 
   return (
     <div className="card card-hover p-4 md:p-5">

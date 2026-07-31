@@ -182,8 +182,12 @@ export async function POST(req: Request) {
     try {
       return NextResponse.json(await liveExtract(imageBase64, mediaType));
     } catch {
-      // Vision call failed — fall back to mock so the demo flow never dead-ends.
-      return NextResponse.json(await mockExtract(imageBase64));
+      // Never substitute invented line items for a real receipt — surface the
+      // failure and let the client's error banner offer a retry.
+      return NextResponse.json(
+        { error: "Vision analysis failed — please retry." },
+        { status: 502 }
+      );
     }
   }
 

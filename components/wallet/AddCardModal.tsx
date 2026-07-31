@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { CreditCard, Loader2, Lock, Sparkles, X } from "lucide-react";
 import { useFam, useCurrentMember } from "@/lib/store";
@@ -62,6 +63,37 @@ export default function AddCardModal({
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const numberRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  // Tracks open across the async tokenize gap so a card is never saved
+  // after the user closed the dialog.
+  const openRef = useRef(open);
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+
+  // Minimal focus trap: keep Tab cycling inside the dialog while open.
+  useEffect(() => {
+    if (!open) return;
+    function onTab(e: KeyboardEvent) {
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+        'button, input, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || !dialogRef.current.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    window.addEventListener("keydown", onTab);
+    return () => window.removeEventListener("keydown", onTab);
+  }, [open]);
 
   const brand = detectBrand(number);
 
@@ -78,11 +110,11 @@ export default function AddCardModal({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape" && open) onClose();
+      if (e.key === "Escape" && open && !busy) onClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  }, [open, busy, onClose]);
 
   function handleNumber(v: string) {
     setNumber(formatCardNumber(v));
@@ -152,6 +184,7 @@ export default function AddCardModal({
         expYear: parsed.expYear,
         cvc,
       });
+      if (!openRef.current) return; // dialog closed mid-tokenize — discard
       addCard({
         memberId: me.id,
         brand: res.brand,
@@ -171,7 +204,13 @@ export default function AddCardModal({
     }
   }
 
-  return (
+  // Portaled to <body>: an animated/filtered ancestor must never become the
+  // containing block for this fixed overlay.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -181,10 +220,11 @@ export default function AddCardModal({
           transition={{ duration: 0.18 }}
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center"
           onMouseDown={(e) => {
-            if (e.target === e.currentTarget) onClose();
+            if (e.target === e.currentTarget && !busy) onClose();
           }}
         >
           <motion.div
+            ref={dialogRef}
             initial={{ opacity: 0, scale: 0.94, y: 18 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
@@ -204,8 +244,9 @@ export default function AddCardModal({
               </div>
               <button
                 onClick={onClose}
+                disabled={busy}
                 aria-label="Close"
-                className="rounded-lg p-1.5 text-ink-faint transition-colors hover:bg-surface-2 hover:text-ink"
+                className="rounded-lg p-1.5 text-ink-faint transition-colors hover:bg-surface-2 hover:text-ink disabled:pointer-events-none disabled:opacity-40"
               >
                 <X size={16} />
               </button>
@@ -307,6 +348,7 @@ export default function AddCardModal({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
