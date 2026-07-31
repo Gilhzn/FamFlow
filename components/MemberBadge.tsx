@@ -1,6 +1,7 @@
 "use client";
 
 import { Member } from "@/lib/types";
+import { useT } from "@/lib/i18n";
 
 export default function MemberBadge({
   member,
@@ -13,6 +14,7 @@ export default function MemberBadge({
   showRole?: boolean;
   size?: number;
 }) {
+  const { t } = useT();
   const initials = member.name.slice(0, 1).toUpperCase();
   const avatar = (
     <span
@@ -37,7 +39,7 @@ export default function MemberBadge({
         </span>
         {showRole && (
           <span className="block text-[11px] capitalize text-ink-faint">
-            {member.role === "admin" ? "Admin · Parent" : "Member"}
+            {member.role === "admin" ? t("common.adminParent") : t("common.member")}
           </span>
         )}
       </span>

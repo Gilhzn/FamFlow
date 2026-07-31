@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Bell, X } from "lucide-react";
 import { useFam } from "@/lib/store";
 import { fmtRelative } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 import { FamAlert } from "@/lib/types";
 
 const SEV_COLOR: Record<FamAlert["severity"], string> = {
@@ -18,6 +19,7 @@ export default function AlertsBell() {
   const markRead = useFam((s) => s.markAlertsRead);
   const dismiss = useFam((s) => s.dismissAlert);
   const [open, setOpen] = useState(false);
+  const { t, lang } = useT();
   const ref = useRef<HTMLDivElement>(null);
   const unread = alerts.filter((a) => !a.read).length;
 
@@ -48,7 +50,7 @@ export default function AlertsBell() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              className="absolute -right-1 -top-1 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-negative px-1 text-[10px] font-bold text-white"
+              className="absolute -end-1 -top-1 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-negative px-1 text-[10px] font-bold text-white"
               style={{ height: 18 }}
             >
               {unread}
@@ -64,19 +66,18 @@ export default function AlertsBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.97 }}
             transition={{ duration: 0.16 }}
-            className="absolute right-0 top-11 z-50 w-[min(92vw,360px)] overflow-hidden rounded-2xl bg-surface-2 shadow-pop"
+            className="absolute end-0 top-11 z-50 w-[min(92vw,360px)] overflow-hidden rounded-2xl bg-surface-2 shadow-pop"
           >
             <div className="flex items-center justify-between border-b border-line px-4 py-3">
-              <p className="text-sm font-semibold">Live notifications</p>
+              <p className="text-sm font-semibold">{t("alerts.title")}</p>
               <span className="text-xs text-ink-faint">
-                {alerts.length} total
+                {t("alerts.total", { n: alerts.length })}
               </span>
             </div>
             <div className="max-h-[60vh] overflow-y-auto">
               {sorted.length === 0 && (
                 <p className="px-4 py-8 text-center text-sm text-ink-faint">
-                  All quiet. Alerts appear here the moment governance rules
-                  trigger.
+                  {t("alerts.empty")}
                 </p>
               )}
               {sorted.map((a) => (
@@ -99,12 +100,12 @@ export default function AlertsBell() {
                       {a.body}
                     </p>
                     <p className="mt-1 text-[11px] text-ink-faint">
-                      {fmtRelative(a.ts)}
+                      {fmtRelative(a.ts, lang)}
                     </p>
                   </div>
                   <button
                     onClick={() => dismiss(a.id)}
-                    aria-label="Dismiss"
+                    aria-label={t("alerts.dismiss")}
                     className="self-start rounded-md p-1 text-ink-faint opacity-0 transition-opacity hover:text-ink group-hover:opacity-100"
                   >
                     <X size={13} />

@@ -14,17 +14,19 @@ import {
   Radio,
 } from "lucide-react";
 import { useFam, useCurrentMember } from "@/lib/store";
+import { useT, syncDirWithLang } from "@/lib/i18n";
 import LoginScreen from "@/components/LoginScreen";
 import AlertsBell from "@/components/AlertsBell";
 import MemberBadge from "@/components/MemberBadge";
+import LangToggle from "@/components/LangToggle";
 
 const NAV = [
-  { href: "/", label: "Home", icon: LayoutDashboard },
-  { href: "/ledger", label: "Ledger", icon: ListOrdered },
-  { href: "/scan", label: "Scan", icon: ScanLine },
-  { href: "/analytics", label: "Analytics", icon: ChartNoAxesColumn },
-  { href: "/wallet", label: "Wallet", icon: Wallet },
-  { href: "/admin", label: "Admin", icon: ShieldCheck, adminOnly: true },
+  { href: "/", key: "nav.home", icon: LayoutDashboard },
+  { href: "/ledger", key: "nav.ledger", icon: ListOrdered },
+  { href: "/scan", key: "nav.scan", icon: ScanLine },
+  { href: "/analytics", key: "nav.analytics", icon: ChartNoAxesColumn },
+  { href: "/wallet", key: "nav.wallet", icon: Wallet },
+  { href: "/admin", key: "nav.admin", icon: ShieldCheck, adminOnly: true },
 ];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -33,8 +35,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const me = useCurrentMember();
   const signOut = useFam((s) => s.signOut);
   const pathname = usePathname();
+  const { t } = useT();
 
   useEffect(() => {
+    syncDirWithLang();
     hydrate();
   }, [hydrate]);
 
@@ -43,7 +47,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-dvh items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="h-10 w-10 animate-pulse-dot rounded-2xl bg-accent" />
-          <p className="text-sm text-ink-faint">Syncing family ledger…</p>
+          <p className="text-sm text-ink-faint">{t("shell.syncing")}</p>
         </div>
       </div>
     );
@@ -56,16 +60,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh md:flex">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-line bg-surface-1/70 backdrop-blur-xl md:flex">
+      <aside className="fixed inset-y-0 start-0 z-40 hidden w-60 flex-col border-e border-line bg-surface-1/70 backdrop-blur-xl md:flex">
         <div className="flex items-center gap-2.5 px-5 pb-2 pt-6">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-sm font-bold text-white shadow-glow">
             F
           </div>
           <div>
-            <p className="text-sm font-semibold leading-tight">FamFinance AI</p>
+            <p className="text-sm font-semibold leading-tight">{t("app.name")}</p>
             <p className="flex items-center gap-1 text-[11px] text-ink-faint">
               <Radio size={10} className="animate-pulse-dot text-positive" />
-              Live sync
+              {t("app.liveSync")}
             </p>
           </div>
         </div>
@@ -84,20 +88,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 }`}
               >
                 <n.icon size={17} strokeWidth={active ? 2.4 : 2} />
-                {n.label}
+                {t(n.key)}
               </Link>
             );
           })}
         </nav>
         <div className="border-t border-line p-3">
+          <div className="mb-2 px-2">
+            <LangToggle />
+          </div>
           <div className="flex items-center justify-between gap-2 rounded-xl px-2 py-1.5">
             <MemberBadge member={me} showRole />
             <button
               onClick={signOut}
-              aria-label="Switch member"
+              aria-label={t("shell.switchMember")}
               className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-surface-2 hover:text-ink"
             >
-              <LogOut size={15} />
+              <LogOut size={15} className="rtl:rotate-180" />
             </button>
           </div>
         </div>
@@ -113,19 +120,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Radio size={11} className="animate-pulse-dot text-positive" />
         </div>
         <div className="flex items-center gap-2">
+          <LangToggle compact />
           <AlertsBell />
-          <button onClick={signOut} aria-label="Switch member">
+          <button onClick={signOut} aria-label={t("shell.switchMember")}>
             <MemberBadge member={me} compact />
           </button>
         </div>
       </header>
 
       {/* Desktop floating bell */}
-      <div className="fixed right-5 top-5 z-40 hidden md:block">
+      <div className="fixed end-5 top-5 z-40 hidden md:block">
         <AlertsBell />
       </div>
 
-      <main className="flex-1 pb-24 md:ml-60 md:pb-8">{children}</main>
+      <main className="flex-1 pb-24 md:ms-60 md:pb-8">{children}</main>
 
       {/* Mobile bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface-1/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
@@ -142,7 +150,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 }`}
               >
                 <n.icon size={20} strokeWidth={active ? 2.4 : 2} />
-                {n.label}
+                {t(n.key)}
               </Link>
             );
           })}

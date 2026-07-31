@@ -1,4 +1,4 @@
-import { fmtMoney } from "./format";
+import { fmtMoney, FmtLang } from "./format";
 import {
   CATEGORY_MAP,
   CategoryId,
@@ -9,6 +9,13 @@ import {
 } from "./types";
 
 const DAY = 86_400_000;
+
+const HE_CAT: Record<string, string> = {
+  food: "מזון וקניות",
+  leisure: "פנאי ובידור",
+  fixed: "הוצאות קבועות",
+  mandatory: "התחייבויות חובה",
+};
 
 export function monthWindow(now = Date.now()) {
   const d = new Date(now);
@@ -97,12 +104,16 @@ export interface SavingsTip {
 
 export function computeSavingsTips(
   state: LedgerState,
-  now = Date.now()
+  now = Date.now(),
+  lang: FmtLang = "en"
 ): SavingsTip[] {
+  const he = lang === "he";
   const tips: SavingsTip[] = [];
   const txs = state.transactions;
   const dow = new Date(now).getDay();
-  const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][dow];
+  const dayName = he
+    ? ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"][dow]
+    : ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][dow];
 
   // 1. Delivery spending vs. same-weekday historical average
   const deliveries = txs.filter((t) => /delivery|wolt|takeout/i.test(t.label));
@@ -121,8 +132,12 @@ export function computeSavingsTips(
         const pct = Math.round((weekSpend / Math.max(1, weeklyAvg) - 1) * 100);
         tips.push({
           id: "tip_delivery",
-          title: `Food delivery is ${pct}% above your weekly average`,
-          body: `You've spent ${fmtMoney(Math.round(weekSpend))} on delivery this week vs. a typical ${fmtMoney(Math.round(weeklyAvg))}. Cooking at home on ${dayName}s (historical avg ${fmtMoney(Math.round(histAvg))}/order) could save ~${fmtMoney(Math.round(Math.max(5, weekSpend - weeklyAvg)))} this week.`,
+          title: he
+            ? `הוצאות משלוחי אוכל גבוהות ב-${pct}% מהממוצע השבועי`
+            : `Food delivery is ${pct}% above your weekly average`,
+          body: he
+            ? `הוצאתם ${fmtMoney(Math.round(weekSpend))} על משלוחים השבוע לעומת ${fmtMoney(Math.round(weeklyAvg))} בדרך כלל. בישול ביתי בימי ${dayName} (ממוצע היסטורי ${fmtMoney(Math.round(histAvg))} להזמנה) יכול לחסוך כ-${fmtMoney(Math.round(Math.max(5, weekSpend - weeklyAvg)))} השבוע.`
+            : `You've spent ${fmtMoney(Math.round(weekSpend))} on delivery this week vs. a typical ${fmtMoney(Math.round(weeklyAvg))}. Cooking at home on ${dayName}s (historical avg ${fmtMoney(Math.round(histAvg))}/order) could save ~${fmtMoney(Math.round(Math.max(5, weekSpend - weeklyAvg)))} this week.`,
           estWeeklySaving: Math.max(5, weekSpend - weeklyAvg),
           category: "food",
         });
@@ -138,8 +153,12 @@ export function computeSavingsTips(
     const monthly = sum(coffee);
     tips.push({
       id: "tip_coffee",
-      title: `${coffee.length} café purchases this month`,
-      body: `Café visits total ${fmtMoney(Math.round(monthly))}/month. Brewing at home 2 days a week would keep ~${fmtMoney(Math.round((monthly * 0.28)))} in the family budget.`,
+      title: he
+        ? `${coffee.length} רכישות בבתי קפה החודש`
+        : `${coffee.length} café purchases this month`,
+      body: he
+        ? `ביקורי בתי קפה מסתכמים ב-${fmtMoney(Math.round(monthly))} בחודש. הכנת קפה בבית יומיים בשבוע תשאיר כ-${fmtMoney(Math.round(monthly * 0.28))} בתקציב המשפחתי.`
+        : `Café visits total ${fmtMoney(Math.round(monthly))}/month. Brewing at home 2 days a week would keep ~${fmtMoney(Math.round((monthly * 0.28)))} in the family budget.`,
       estWeeklySaving: (monthly * 0.28) / 4.3,
       category: "food",
     });
@@ -155,8 +174,10 @@ export function computeSavingsTips(
     if (subMonthly > 0) {
       tips.push({
         id: "tip_subs",
-        title: "Streaming stack review",
-        body: `Recurring streaming services cost ${fmtMoney(Math.round(subMonthly))}/month alongside ${fmtMoney(Math.round(sum(leisure30)))} of other leisure spending. Rotating one service off saves ${fmtMoney(Math.round((subMonthly / 2)))}/month with zero lifestyle change.`,
+        title: he ? "בדיקת מנויי סטרימינג" : "Streaming stack review",
+        body: he
+          ? `שירותי סטרימינג קבועים עולים ${fmtMoney(Math.round(subMonthly))} בחודש, לצד ${fmtMoney(Math.round(sum(leisure30)))} של הוצאות פנאי נוספות. השהיית שירות אחד חוסכת ${fmtMoney(Math.round(subMonthly / 2))} בחודש בלי לשנות את אורח החיים.`
+          : `Recurring streaming services cost ${fmtMoney(Math.round(subMonthly))}/month alongside ${fmtMoney(Math.round(sum(leisure30)))} of other leisure spending. Rotating one service off saves ${fmtMoney(Math.round((subMonthly / 2)))}/month with zero lifestyle change.`,
         estWeeklySaving: subMonthly / 2 / 4.3,
         category: "leisure",
       });
@@ -267,8 +288,10 @@ export function memberVelocity(
 export function runGovernanceChecks(
   state: LedgerState,
   newTx: Transaction,
-  now = Date.now()
+  now = Date.now(),
+  lang: FmtLang = "en"
 ): FamAlert[] {
+  const he = lang === "he";
   const alerts: FamAlert[] = [];
   const member = state.members.find((m) => m.id === newTx.memberId);
   const mk = (a: Omit<FamAlert, "id" | "ts" | "read">): FamAlert => ({
@@ -286,8 +309,12 @@ export function runGovernanceChecks(
         mk({
           kind: "budget",
           severity: "critical",
-          title: `${member.name} exceeded their monthly cap`,
-          body: `${fmtMoney(Math.round(spent))} spent against a $${member.monthlyCap} cap.`,
+          title: he
+            ? `${member.name} חרג/ה מהתקרה החודשית`
+            : `${member.name} exceeded their monthly cap`,
+          body: he
+            ? `הוצאו ${fmtMoney(Math.round(spent))} מול תקרה של $${member.monthlyCap}.`
+            : `${fmtMoney(Math.round(spent))} spent against a $${member.monthlyCap} cap.`,
           memberId: member.id,
         })
       );
@@ -296,8 +323,12 @@ export function runGovernanceChecks(
         mk({
           kind: "budget",
           severity: "warn",
-          title: `${member.name} at ${Math.round((spent / member.monthlyCap) * 100)}% of cap`,
-          body: `${fmtMoney(Math.round((member.monthlyCap - spent)))} left this month.`,
+          title: he
+            ? `${member.name} ב-${Math.round((spent / member.monthlyCap) * 100)}% מהתקרה`
+            : `${member.name} at ${Math.round((spent / member.monthlyCap) * 100)}% of cap`,
+          body: he
+            ? `נותרו ${fmtMoney(Math.round(member.monthlyCap - spent))} החודש.`
+            : `${fmtMoney(Math.round((member.monthlyCap - spent)))} left this month.`,
           memberId: member.id,
         })
       );
@@ -317,8 +348,12 @@ export function runGovernanceChecks(
         mk({
           kind: "budget",
           severity: "warn",
-          title: `${CATEGORY_MAP[newTx.category].label} over budget`,
-          body: `${fmtMoney(Math.round(catSpent))} against a $${cap} monthly cap.`,
+          title: he
+            ? `חריגה מתקציב בקטגוריה ${HE_CAT[newTx.category]}`
+            : `${CATEGORY_MAP[newTx.category].label} over budget`,
+          body: he
+            ? `${fmtMoney(Math.round(catSpent))} מול תקרה חודשית של $${cap}.`
+            : `${fmtMoney(Math.round(catSpent))} against a $${cap} monthly cap.`,
         })
       );
     }
@@ -332,8 +367,12 @@ export function runGovernanceChecks(
         mk({
           kind: "velocity",
           severity: "warn",
-          title: `Spending velocity spike — ${member.name}`,
-          body: `${fmtMoney(Math.round(v.last24))} in 24h vs. a ${fmtMoney(Math.round(v.dailyAvg))}/day average (${v.count24} transactions).`,
+          title: he
+            ? `קפיצה בקצב ההוצאות — ${member.name}`
+            : `Spending velocity spike — ${member.name}`,
+          body: he
+            ? `${fmtMoney(Math.round(v.last24))} ב-24 שעות לעומת ממוצע של ${fmtMoney(Math.round(v.dailyAvg))} ליום (${v.count24} עסקאות).`
+            : `${fmtMoney(Math.round(v.last24))} in 24h vs. a ${fmtMoney(Math.round(v.dailyAvg))}/day average (${v.count24} transactions).`,
           memberId: member.id,
         })
       );
@@ -348,8 +387,10 @@ export function runGovernanceChecks(
         mk({
           kind: "runway",
           severity: "critical",
-          title: "Overdraft trajectory detected",
-          body: `Current burn rate of ${fmtMoney(Math.round(runway.dailyBurn))}/day projects ${fmtMoney(Math.round(runway.projectedTotal))} by month-end — ${fmtMoney(Math.round(Math.abs(runway.projectedDelta)))} over budget (predicted dry on day ${runway.overdraftDay}).`,
+          title: he ? "זוהה מסלול לחריגה מהתקציב" : "Overdraft trajectory detected",
+          body: he
+            ? `קצב הוצאות נוכחי של ${fmtMoney(Math.round(runway.dailyBurn))} ליום צופה ${fmtMoney(Math.round(runway.projectedTotal))} עד סוף החודש — ${fmtMoney(Math.round(Math.abs(runway.projectedDelta)))} מעל התקציב (התקציב צפוי להיגמר ביום ${runway.overdraftDay}).`
+            : `Current burn rate of ${fmtMoney(Math.round(runway.dailyBurn))}/day projects ${fmtMoney(Math.round(runway.projectedTotal))} by month-end — ${fmtMoney(Math.round(Math.abs(runway.projectedDelta)))} over budget (predicted dry on day ${runway.overdraftDay}).`,
         })
       );
     }

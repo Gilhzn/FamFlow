@@ -36,7 +36,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-sans)", "var(--font-hebrew)", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       boxShadow: {

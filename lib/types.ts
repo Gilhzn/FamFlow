@@ -20,12 +20,20 @@ export const CATEGORY_MAP: Record<CategoryId, CategoryDef> = Object.fromEntries(
   CATEGORIES.map((c) => [c.id, c])
 ) as Record<CategoryId, CategoryDef>;
 
+export interface StoredCredential {
+  salt: string;
+  hash: string;
+}
+
 export interface Member {
   id: string;
   name: string;
   role: Role;
   color: string; // avatar hue
   monthlyCap: number | null; // admin-configured spending cap, null = uncapped
+  email?: string; // admins sign in with email + password
+  credential?: StoredCredential; // salted password hash (admins)
+  pinCredential?: StoredCredential; // salted PIN hash (members)
 }
 
 export type TxSource = "manual" | "scan" | "payment";
