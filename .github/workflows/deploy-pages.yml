@@ -10,13 +10,14 @@ on:
 permissions:
   contents: write
   pages: write
+  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,18 +41,38 @@ jobs:
           STATIC_EXPORT: "1"
           BASE_PATH: /FamFlow
 
-      - name: Publish to gh-pages branch
+      - name: Diagnose github-pages environment policy
+        run: |
+          echo "--- environment ---"
+          curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/environments/github-pages || true
+          echo "--- branch policies ---"
+          curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/environments/github-pages/deployment-branch-policies || true
+          echo "--- pages config ---"
+          curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/pages || true
+
+      - name: Publish to gh-pages branch (branch-source fallback)
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./out
           force_orphan: true
 
-      - name: Point Pages at the gh-pages branch
-        run: |
-          curl -sS -X PUT \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/pages \
-            -d '{"build_type":"legacy","source":{"branch":"gh-pages","path":"/"}}' \
-            || echo "::warning::Pages source switch failed — set Settings → Pages → Source to gh-pages manually"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
