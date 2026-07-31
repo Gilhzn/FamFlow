@@ -16,6 +16,7 @@ import { Member } from "@/lib/types";
 import { useT } from "@/lib/i18n";
 import { isValidEmail, makeCredential, verifySecret } from "@/lib/auth";
 import LangToggle from "@/components/LangToggle";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type View =
   | { kind: "profiles" }
@@ -98,8 +99,9 @@ export default function LoginScreen() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center px-4">
-      <div className="fixed end-4 top-4">
+      <div className="fixed end-4 top-4 flex gap-1.5">
         <LangToggle />
+        <ThemeToggle compact />
       </div>
 
       <motion.div

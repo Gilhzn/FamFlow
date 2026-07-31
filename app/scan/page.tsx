@@ -12,13 +12,21 @@ import { PRODUCT_REGISTRY } from "@/lib/seed";
 import { matchHistoricalPrices } from "@/lib/vision";
 import { mockExtract, VisionPayload } from "@/lib/vision-mock";
 import CaptureZone from "@/components/scan/CaptureZone";
-import ScanProgress from "@/components/scan/ScanProgress";
+import ScanProgress, { PRODUCT_STEPS } from "@/components/scan/ScanProgress";
 import ResultsSheet, {
   EditableRow,
   rowTotal,
 } from "@/components/scan/ResultsSheet";
+import ProductResults from "@/components/scan/ProductResults";
+import {
+  mockProductSearch,
+  ProductOffer,
+  ProductSearchResult,
+} from "@/lib/product-search";
+import { ReceiptText, Tag } from "lucide-react";
 
 type Phase = "capture" | "analyzing" | "review" | "logged";
+type ScanMode = "receipt" | "product";
 
 interface ImageData {
   base64: string;
@@ -64,6 +72,13 @@ export default function ScanPage() {
   const [category, setCategory] = useState<CategoryId>("food");
   const [loggedTx, setLoggedTx] = useState<Transaction | null>(null);
 
+  // Product-photo mode: automated price search + manual override
+  const [scanMode, setScanMode] = useState<ScanMode>("receipt");
+  const [product, setProduct] = useState<ProductSearchResult | null>(null);
+  const [productName, setProductName] = useState("");
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+  const [productPrice, setProductPrice] = useState("");
+
   const handleSelect = useCallback((file: File) => {
     setError(null);
     const reader = new FileReader();
@@ -91,7 +106,78 @@ export default function ScanPage() {
     setRows([]);
     setCategory("food");
     setLoggedTx(null);
+    setProduct(null);
+    setProductName("");
+    setSelectedOfferId(null);
+    setProductPrice("");
   }, []);
+
+  const switchScanMode = useCallback(
+    (m: ScanMode) => {
+      if (m === scanMode) return;
+      setScanMode(m);
+      reset();
+    },
+    [scanMode, reset]
+  );
+
+  /** Product photo → automated multi-store price search (labeled mock). */
+  const searchProduct = useCallback(async () => {
+    if (!image) return;
+    setError(null);
+    setPhase("analyzing");
+    setStep(0);
+    try {
+      const request = mockProductSearch(image.base64);
+      await sleep(450);
+      setStep(1); // searching images
+      await sleep(650);
+      setStep(2); // comparing prices
+      const result = await request;
+      setProduct(result);
+      setProductName(result.productName);
+      setCategory(result.category);
+      const best = result.offers[0] ?? null;
+      setSelectedOfferId(best ? best.id : null);
+      setProductPrice(best ? best.price.toFixed(2) : "");
+      setPhase("review");
+    } catch {
+      setError("scan.errAnalyze");
+      setPhase("capture");
+    }
+  }, [image]);
+
+  const selectOffer = useCallback((o: ProductOffer) => {
+    setSelectedOfferId(o.id);
+    setProductPrice(o.price.toFixed(2));
+  }, []);
+
+  // Manual price entry always wins — typing detaches the offer selection.
+  const changeProductPrice = useCallback(
+    (v: string) => {
+      setProductPrice(v);
+      const sel = product?.offers.find((o) => o.id === selectedOfferId);
+      if (sel && parseFloat(v) !== sel.price) setSelectedOfferId(null);
+    },
+    [product, selectedOfferId]
+  );
+
+  const logProduct = useCallback(() => {
+    if (!me) return;
+    const amount = Math.round(parseFloat(productPrice) * 100) / 100;
+    if (!Number.isFinite(amount) || amount <= 0 || !productName.trim()) return;
+    const tx = addTransaction({
+      memberId: me.id,
+      amount,
+      category,
+      label: productName.trim(),
+      source: "scan",
+      items: [{ name: productName.trim(), price: amount }],
+    });
+    setLoggedTx(tx);
+    setMode("mock");
+    setPhase("logged");
+  }, [me, productPrice, productName, category, addTransaction]);
 
   const analyze = useCallback(async () => {
     if (!image) return;
@@ -228,8 +314,39 @@ export default function ScanPage() {
           <h1 className="text-xl font-bold tracking-tight md:text-2xl">
             {t("scan.title")}
           </h1>
-          <p className="mt-1 text-sm text-ink-dim">{t("scan.subtitle")}</p>
+          <p className="mt-1 text-sm text-ink-dim">
+            {scanMode === "receipt"
+              ? t("scan.subtitle")
+              : t("scan.product.subtitle")}
+          </p>
         </header>
+
+        {/* Receipt / Product mode switcher */}
+        <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-surface-2 p-1">
+          {(
+            [
+              { id: "receipt", icon: ReceiptText, key: "scan.mode.receipt" },
+              { id: "product", icon: Tag, key: "scan.mode.product" },
+            ] as const
+          ).map((m) => {
+            const sel = scanMode === m.id;
+            return (
+              <button
+                key={m.id}
+                aria-pressed={sel}
+                onClick={() => switchScanMode(m.id)}
+                className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                  sel
+                    ? "bg-surface-1 text-ink shadow-card"
+                    : "text-ink-dim hover:text-ink"
+                }`}
+              >
+                <m.icon size={15} />
+                {t(m.key)}
+              </button>
+            );
+          })}
+        </div>
 
         <AnimatePresence>
           {error && (
@@ -251,13 +368,33 @@ export default function ScanPage() {
             fileName={image?.fileName ?? null}
             onSelect={handleSelect}
             onClear={() => setImage(null)}
-            onAnalyze={analyze}
+            onAnalyze={scanMode === "receipt" ? analyze : searchProduct}
           />
         )}
 
-        {phase === "analyzing" && <ScanProgress step={step} />}
+        {phase === "analyzing" && (
+          <ScanProgress
+            step={step}
+            stepKeys={scanMode === "product" ? PRODUCT_STEPS : undefined}
+          />
+        )}
 
-        {phase === "review" && (
+        {phase === "review" && scanMode === "product" && product && (
+          <ProductResults
+            productName={productName}
+            onNameChange={setProductName}
+            offers={product.offers}
+            selectedOfferId={selectedOfferId}
+            onSelectOffer={selectOffer}
+            price={productPrice}
+            onPriceChange={changeProductPrice}
+            category={category}
+            onCategoryChange={setCategory}
+            onLog={logProduct}
+          />
+        )}
+
+        {phase === "review" && scanMode === "receipt" && (
           <ResultsSheet
             merchant={merchant}
             onMerchantChange={setMerchant}

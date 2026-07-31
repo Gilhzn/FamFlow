@@ -2,7 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Default theme: LIGHT. Dark is opt-in via data-theme="dark" on <html>. */
 :root {
+  --surface-0: #f5f6f9;
+  --surface-1: #ffffff;
+  --surface-2: #eff1f5;
+  --surface-3: #e4e8ee;
+  --ink: #1a1e26;
+  --ink-dim: #4e5563;
+  --ink-faint: #8a919f;
+  --accent: #5b7cf5;
+  --accent-soft: rgba(91, 124, 245, 0.14);
+  --line: rgba(18, 24, 36, 0.09);
+  --positive: #109a67;
+  --negative: #e5484d;
+  --warning: #d97a06;
+  --cat-food: #109a67;
+  --cat-leisure: #9d4de0;
+  --cat-fixed: #5b7cf5;
+  --cat-mandatory: #d97a06;
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.06), 0 0 0 1px var(--line);
+  --shadow-pop: 0 8px 30px rgba(16, 24, 40, 0.14), 0 0 0 1px var(--line);
+  --shadow-glow: 0 0 24px var(--accent-soft);
+  --tooltip-cursor: rgba(18, 24, 36, 0.05);
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
   --surface-0: #08090c;
   --surface-1: #0e1015;
   --surface-2: #14171e;
@@ -20,14 +46,15 @@
   --cat-leisure: #c084fc;
   --cat-fixed: #6c8cff;
   --cat-mandatory: #ffb84d;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--line);
+  --shadow-pop: 0 8px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--line);
+  --shadow-glow: 0 0 24px var(--accent-soft);
+  --tooltip-cursor: rgba(255, 255, 255, 0.04);
+  color-scheme: dark;
 }
 
 * {
   -webkit-tap-highlight-color: transparent;
-}
-
-html {
-  color-scheme: dark;
 }
 
 body {
@@ -102,7 +129,7 @@ body {
   font-size: 11px;
 }
 .recharts-tooltip-cursor {
-  fill: rgba(255, 255, 255, 0.04);
+  fill: var(--tooltip-cursor);
 }
 .recharts-default-tooltip {
   border-radius: 12px !important;

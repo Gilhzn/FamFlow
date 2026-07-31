@@ -11,11 +11,19 @@ export const SCAN_STEPS = [
   "scan.step.matching",
 ] as const;
 
+/** i18n keys for the product-search phases, in order. */
+export const PRODUCT_STEPS = [
+  "scan.step.upload",
+  "scan.product.step.searching",
+  "scan.product.step.comparing",
+] as const;
+
 interface ScanProgressProps {
-  step: number; // index into SCAN_STEPS of the currently active step
+  step: number; // index of the currently active step
+  stepKeys?: readonly string[];
 }
 
-export default function ScanProgress({ step }: ScanProgressProps) {
+export default function ScanProgress({ step, stepKeys = SCAN_STEPS }: ScanProgressProps) {
   const { t } = useT();
   return (
     <motion.div
@@ -25,7 +33,7 @@ export default function ScanProgress({ step }: ScanProgressProps) {
     >
       {/* Step indicator */}
       <div className="flex items-center justify-between gap-2">
-        {SCAN_STEPS.map((key, i) => {
+        {stepKeys.map((key, i) => {
           const done = i < step;
           const active = i === step;
           return (
@@ -54,7 +62,7 @@ export default function ScanProgress({ step }: ScanProgressProps) {
               >
                 {t(key)}
               </span>
-              {i < SCAN_STEPS.length - 1 && (
+              {i < stepKeys.length - 1 && (
                 <div
                   className={`h-px min-w-3 flex-1 transition-colors duration-300 ${
                     done ? "bg-[color-mix(in_srgb,var(--positive)_50%,transparent)]" : "bg-line"

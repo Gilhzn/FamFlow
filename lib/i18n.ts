@@ -93,6 +93,9 @@ const core: Dict = {
       "Accounts live in this browser and sync across its tabs — no data leaves your device.",
 
     "lang.toggle": "עברית",
+    "theme.toggle": "Toggle theme",
+    "theme.dark": "Dark",
+    "theme.light": "Light",
   },
   he: {
     "app.name": "FamFinance AI",
@@ -172,6 +175,9 @@ const core: Dict = {
       "החשבונות נשמרים בדפדפן הזה ומסתנכרנים בין הטאבים שלו — שום מידע לא עוזב את המכשיר.",
 
     "lang.toggle": "English",
+    "theme.toggle": "החלפת ערכת נושא",
+    "theme.dark": "כהה",
+    "theme.light": "בהיר",
   },
 };
 
@@ -192,10 +198,15 @@ for (const d of MODULE_DICTS) {
 }
 
 const LANG_KEY = "famflow.lang.v1";
+const THEME_KEY = "famflow.theme.v1";
+
+export type Theme = "light" | "dark";
 
 interface UIStore {
   lang: Lang;
+  theme: Theme;
   setLang: (l: Lang) => void;
+  setTheme: (t: Theme) => void;
 }
 
 function applyDir(lang: Lang) {
@@ -204,10 +215,17 @@ function applyDir(lang: Lang) {
   document.documentElement.lang = lang;
 }
 
+function applyTheme(theme: Theme) {
+  if (typeof document === "undefined") return;
+  if (theme === "dark") document.documentElement.dataset.theme = "dark";
+  else delete document.documentElement.dataset.theme;
+}
+
 export const useUI = create<UIStore>((set) => ({
-  // Always start as "en" so SSR/prerender markup matches the first client
-  // render; the persisted language is applied post-mount (syncDirWithLang).
+  // SSR-safe defaults ("en" + "light" match the prerendered markup); the
+  // persisted preferences are applied post-mount (syncDirWithLang).
   lang: "en",
+  theme: "light",
   setLang: (l) => {
     set({ lang: l });
     applyDir(l);
@@ -215,19 +233,35 @@ export const useUI = create<UIStore>((set) => ({
       localStorage.setItem(LANG_KEY, l);
     } catch {}
   },
+  setTheme: (t) => {
+    set({ theme: t });
+    applyTheme(t);
+    try {
+      localStorage.setItem(THEME_KEY, t);
+    } catch {}
+  },
 }));
 
-/** Post-mount: apply the persisted language + direction (avoids hydration mismatch). */
+/** Post-mount: apply persisted language, direction and theme (avoids hydration mismatch). */
 export function syncDirWithLang() {
   try {
     const v = localStorage.getItem(LANG_KEY);
     if (v === "he" || v === "en") {
       if (v !== useUI.getState().lang) useUI.getState().setLang(v);
       else applyDir(v);
-      return;
+    } else {
+      applyDir(useUI.getState().lang);
+    }
+  } catch {
+    applyDir(useUI.getState().lang);
+  }
+  try {
+    const th = localStorage.getItem(THEME_KEY);
+    if (th === "dark" || th === "light") {
+      if (th !== useUI.getState().theme) useUI.getState().setTheme(th);
+      else applyTheme(th);
     }
   } catch {}
-  applyDir(useUI.getState().lang);
 }
 
 export function translate(lang: Lang, key: string, params?: Record<string, string | number>): string {

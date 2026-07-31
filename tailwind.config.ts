@@ -40,9 +40,9 @@ const config: Config = {
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       boxShadow: {
-        card: "0 1px 2px rgba(0,0,0,0.3), 0 0 0 1px var(--line)",
-        pop: "0 8px 30px rgba(0,0,0,0.45), 0 0 0 1px var(--line)",
-        glow: "0 0 24px var(--accent-soft)",
+        card: "var(--shadow-card)",
+        pop: "var(--shadow-pop)",
+        glow: "var(--shadow-glow)",
       },
       animation: {
         // fill-mode backwards (not both/forwards): a filled transform keeps the

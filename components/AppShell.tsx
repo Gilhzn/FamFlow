@@ -19,6 +19,7 @@ import LoginScreen from "@/components/LoginScreen";
 import AlertsBell from "@/components/AlertsBell";
 import MemberBadge from "@/components/MemberBadge";
 import LangToggle from "@/components/LangToggle";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const NAV = [
   { href: "/", key: "nav.home", icon: LayoutDashboard },
@@ -94,8 +95,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="border-t border-line p-3">
-          <div className="mb-2 px-2">
+          <div className="mb-2 flex gap-1.5 px-2">
             <LangToggle />
+            <ThemeToggle />
           </div>
           <div className="flex items-center justify-between gap-2 rounded-xl px-2 py-1.5">
             <MemberBadge member={me} showRole />
@@ -121,6 +123,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         <div className="flex items-center gap-2">
           <LangToggle compact />
+          <ThemeToggle compact />
           <AlertsBell />
           <button onClick={signOut} aria-label={t("shell.switchMember")}>
             <MemberBadge member={me} compact />

@@ -5,7 +5,7 @@
 //   lang: en (default) | he
 import { chromium } from "playwright-core";
 
-const [, , route = "/", out = "shot.png", viewport = "desktop", member = "m_dana", lang = "en"] =
+const [, , route = "/", out = "shot.png", viewport = "desktop", member = "m_dana", lang = "en", theme = "light"] =
   process.argv;
 
 const size =
@@ -28,6 +28,9 @@ if (member !== "none") {
 await ctx.addInitScript((l) => {
   localStorage.setItem("famflow.lang.v1", l);
 }, lang);
+await ctx.addInitScript((th) => {
+  localStorage.setItem("famflow.theme.v1", th);
+}, theme);
 const page = await ctx.newPage();
 const errors = [];
 page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
