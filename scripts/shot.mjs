@@ -1,10 +1,11 @@
 // Screenshot harness for the Gauntlet Critic.
-// Usage: node scripts/shot.mjs <path> <outfile.png> [viewport] [memberId]
+// Usage: node scripts/shot.mjs <path> <outfile.png> [viewport] [memberId] [lang]
 //   viewport: "mobile" (390x844) | "desktop" (1440x900, default)
 //   memberId: m_dana (admin, default) | m_avi | m_noa | m_tom | none
+//   lang: en (default) | he
 import { chromium } from "playwright-core";
 
-const [, , route = "/", out = "shot.png", viewport = "desktop", member = "m_dana"] =
+const [, , route = "/", out = "shot.png", viewport = "desktop", member = "m_dana", lang = "en"] =
   process.argv;
 
 const size =
@@ -24,6 +25,9 @@ if (member !== "none") {
     localStorage.setItem("famfinance.session.v1", id);
   }, member);
 }
+await ctx.addInitScript((l) => {
+  localStorage.setItem("famflow.lang.v1", l);
+}, lang);
 const page = await ctx.newPage();
 const errors = [];
 page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));

@@ -34,7 +34,7 @@ await tabA.waitForTimeout(800);
 
 const uniqueLabel = `E2E Sync Probe ${Math.random().toString(36).slice(2, 7)}`;
 await tabA.getByLabel("Amount").fill("12.34");
-await tabA.getByLabel("Label").fill(uniqueLabel);
+await tabA.getByPlaceholder(/what was it/i).fill(uniqueLabel);
 await tabA.getByRole("button", { name: "Add", exact: true }).click();
 
 // The entry must appear in tab A instantly (optimistic)…

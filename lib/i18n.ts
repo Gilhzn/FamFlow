@@ -204,17 +204,10 @@ function applyDir(lang: Lang) {
   document.documentElement.lang = lang;
 }
 
-function initialLang(): Lang {
-  if (typeof window === "undefined") return "en";
-  try {
-    const v = localStorage.getItem(LANG_KEY);
-    if (v === "he" || v === "en") return v;
-  } catch {}
-  return "en";
-}
-
 export const useUI = create<UIStore>((set) => ({
-  lang: initialLang(),
+  // Always start as "en" so SSR/prerender markup matches the first client
+  // render; the persisted language is applied post-mount (syncDirWithLang).
+  lang: "en",
   setLang: (l) => {
     set({ lang: l });
     applyDir(l);
@@ -224,8 +217,16 @@ export const useUI = create<UIStore>((set) => ({
   },
 }));
 
-/** Apply the persisted direction on first client render. */
+/** Post-mount: apply the persisted language + direction (avoids hydration mismatch). */
 export function syncDirWithLang() {
+  try {
+    const v = localStorage.getItem(LANG_KEY);
+    if (v === "he" || v === "en") {
+      if (v !== useUI.getState().lang) useUI.getState().setLang(v);
+      else applyDir(v);
+      return;
+    }
+  } catch {}
   applyDir(useUI.getState().lang);
 }
 

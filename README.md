@@ -12,8 +12,12 @@ npm run dev        # http://localhost:3000
 ```
 
 Pick a family member on the login screen (Dana/Avi are Admin·Parents; Noa/Tom
-are capped Members). **Open the app in a second tab or window** — every entry,
-payment, cap change, and alert syncs across tabs instantly.
+are capped Members), or **create your own family** — sign-up stores a salted
+SHA-256 credential in the browser (no data leaves the device), admins sign in
+with email+password and members with a PIN. **Open the app in a second tab or
+window** — every entry, payment, cap change, and alert syncs across tabs
+instantly. Fully bilingual: English and Hebrew (full RTL) via the in-app
+language toggle.
 
 ## Modules
 
