@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, SearchX } from "lucide-react";
 import { useFam, useCurrentMember } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import { CategoryId, Transaction } from "@/lib/types";
 import { fmtMoney } from "@/lib/format";
 import QuickAddBar from "@/components/ledger/QuickAddBar";
@@ -13,14 +14,19 @@ import UndoToast from "@/components/ledger/UndoToast";
 
 const PAGE_SIZE = 150;
 
-function dayLabel(ts: number) {
+function dayLabel(
+  ts: number,
+  lang: "en" | "he",
+  t: (key: string) => string
+) {
   const d = new Date(ts);
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
-  if (d.toDateString() === today.toDateString()) return "Today";
-  if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
-  return d.toLocaleDateString("en-US", {
+  if (d.toDateString() === today.toDateString()) return t("ledger.today");
+  if (d.toDateString() === yesterday.toDateString())
+    return t("ledger.yesterday");
+  return d.toLocaleDateString(lang === "he" ? "he-IL" : "en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -33,6 +39,7 @@ export default function LedgerPage() {
   const deleteTransaction = useFam((s) => s.deleteTransaction);
   const addTransaction = useFam((s) => s.addTransaction);
   const me = useCurrentMember();
+  const { t, lang } = useT();
 
   const [pendingUndo, setPendingUndo] = useState<Transaction | null>(null);
 
@@ -149,11 +156,9 @@ export default function LedgerPage() {
     <div className="mx-auto max-w-3xl animate-fade-up p-4 md:p-8">
       <header className="mb-4 md:mb-6">
         <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
-          Family Ledger
+          {t("ledger.title")}
         </h1>
-        <p className="mt-0.5 text-sm text-ink-dim">
-          Every purchase, synced live across the family.
-        </p>
+        <p className="mt-0.5 text-sm text-ink-dim">{t("ledger.subtitle")}</p>
       </header>
 
       <QuickAddBar />
@@ -181,20 +186,19 @@ export default function LedgerPage() {
           </div>
           {transactions.length === 0 ? (
             <>
-              <p className="text-sm font-medium">No transactions yet</p>
+              <p className="text-sm font-medium">{t("ledger.emptyTitle")}</p>
               <p className="max-w-xs text-xs leading-relaxed text-ink-faint">
-                Add your first purchase with the quick-add bar above — it syncs
-                to every family member instantly.
+                {t("ledger.emptyBody")}
               </p>
             </>
           ) : (
             <>
-              <p className="text-sm font-medium">Nothing matches these filters</p>
+              <p className="text-sm font-medium">{t("ledger.noMatchTitle")}</p>
               <p className="max-w-xs text-xs leading-relaxed text-ink-faint">
-                Try a different member, category, or search term.
+                {t("ledger.noMatchBody")}
               </p>
               <button onClick={clearFilters} className="btn-ghost mt-1">
-                Clear filters
+                {t("ledger.clearFilters")}
               </button>
             </>
           )}
@@ -205,9 +209,12 @@ export default function LedgerPage() {
             <section key={key}>
               <div className="sticky top-[53px] z-10 flex items-baseline justify-between bg-surface-0/95 px-1 py-2 backdrop-blur-md md:top-0">
                 <h2 className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
-                  {dayLabel(g.ts)}
+                  {dayLabel(g.ts, lang, t)}
                 </h2>
-                <span className="tabular text-xs font-medium text-ink-dim">
+                <span
+                  dir="ltr"
+                  className="tabular text-xs font-medium text-ink-dim"
+                >
                   {fmtMoney(dayTotals.get(key) ?? 0, { cents: true })}
                 </span>
               </div>
@@ -236,7 +243,7 @@ export default function LedgerPage() {
               className="btn-ghost mt-4 w-full"
             >
               <ChevronDown size={15} />
-              Show more ({remaining} older)
+              {t("ledger.showMore", { n: remaining })}
             </motion.button>
           )}
         </div>
