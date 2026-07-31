@@ -41,33 +41,13 @@ jobs:
           STATIC_EXPORT: "1"
           BASE_PATH: /FamFlow
 
-      - name: Diagnose github-pages environment policy
-        run: |
-          echo "--- environment ---"
-          curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/environments/github-pages || true
-          echo "--- branch policies ---"
-          curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/environments/github-pages/deployment-branch-policies || true
-          echo "--- pages config ---"
-          curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/pages || true
-
-      - name: Publish to gh-pages branch (branch-source fallback)
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./out
-          force_orphan: true
-
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out
 
   deploy:
+    # The github-pages environment only permits deployments from main.
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:
