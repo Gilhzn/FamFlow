@@ -9,6 +9,7 @@ import { CATEGORIES, CategoryId, ReceiptItem, Transaction, uid } from "@/lib/typ
 import { fmtMoney } from "@/lib/format";
 import { PRODUCT_REGISTRY } from "@/lib/seed";
 import { matchHistoricalPrices } from "@/lib/vision";
+import { mockExtract, VisionPayload } from "@/lib/vision-mock";
 import CaptureZone from "@/components/scan/CaptureZone";
 import ScanProgress from "@/components/scan/ScanProgress";
 import ResultsSheet, {
@@ -96,25 +97,40 @@ export default function ScanPage() {
     setStep(0);
 
     try {
-      const request = fetch("/api/vision", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imageBase64: image.base64,
-          mediaType: image.mediaType,
-        }),
-      });
+      // Static deployments (e.g. GitHub Pages) have no API server at all —
+      // fall back to the same labeled client-side mock the keyless server
+      // uses. A live-API failure (5xx) still surfaces the error banner.
+      const request = (async (): Promise<VisionPayload> => {
+        let res: Response;
+        try {
+          res = await fetch("/api/vision", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              imageBase64: image.base64,
+              mediaType: image.mediaType,
+            }),
+          });
+        } catch {
+          return mockExtract(image.base64); // no server reachable
+        }
+        if (res.ok) return res.json();
+        // Our API route always returns a JSON {error} body. Anything else
+        // (404/405/501 HTML from a static host) means the route simply
+        // isn't deployed — use the labeled client-side mock instead.
+        const isApiError = await res
+          .clone()
+          .json()
+          .then((j) => typeof j?.error === "string")
+          .catch(() => false);
+        if (!isApiError) return mockExtract(image.base64);
+        throw new Error(`Vision API returned ${res.status}`);
+      })();
 
       await sleep(450);
       setStep(1); // AI reading
 
-      const res = await request;
-      if (!res.ok) throw new Error(`Vision API returned ${res.status}`);
-      const data: {
-        mode: "live" | "mock";
-        merchant: string;
-        items: { name: string; price: number }[];
-      } = await res.json();
+      const data = await request;
 
       setStep(2); // Matching history
       await sleep(650);
