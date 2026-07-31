@@ -1,11 +1,14 @@
-export function fmtMoney(n: number, opts: { compact?: boolean; sign?: boolean } = {}) {
+export function fmtMoney(
+  n: number,
+  opts: { compact?: boolean; sign?: boolean; cents?: boolean } = {}
+) {
   const abs = Math.abs(n);
   const sign = opts.sign && n > 0 ? "+" : n < 0 ? "−" : "";
   if (opts.compact && abs >= 10000) {
     return `${sign}$${(abs / 1000).toFixed(1)}k`;
   }
   return `${sign}$${abs.toLocaleString("en-US", {
-    minimumFractionDigits: abs % 1 === 0 ? 0 : 2,
+    minimumFractionDigits: opts.cents || abs % 1 !== 0 ? 2 : 0,
     maximumFractionDigits: 2,
   })}`;
 }

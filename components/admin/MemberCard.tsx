@@ -1,0 +1,160 @@
+"use client";
+
+import { useMemo } from "react";
+import { Flame } from "lucide-react";
+import { useFam } from "@/lib/store";
+import { memberMonthSpend, memberVelocity } from "@/lib/insights";
+import { fmtMoney } from "@/lib/format";
+import { Member } from "@/lib/types";
+import MemberBadge from "@/components/MemberBadge";
+import CapInput from "./CapInput";
+import Sparkline from "./Sparkline";
+
+const DAY = 86_400_000;
+
+function CapRing({
+  pct,
+  color,
+  over,
+}: {
+  pct: number | null;
+  color: string;
+  over: boolean;
+}) {
+  const r = 24;
+  const c = 2 * Math.PI * r;
+  const frac = pct == null ? 0 : Math.min(1, pct);
+  return (
+    <div className="relative h-[60px] w-[60px] shrink-0">
+      <svg viewBox="0 0 60 60" className="h-full w-full -rotate-90">
+        <circle
+          cx={30}
+          cy={30}
+          r={r}
+          fill="none"
+          stroke="var(--surface-3)"
+          strokeWidth={5}
+        />
+        {pct != null && (
+          <circle
+            cx={30}
+            cy={30}
+            r={r}
+            fill="none"
+            stroke={over ? "var(--negative)" : color}
+            strokeWidth={5}
+            strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={c * (1 - frac)}
+            className="transition-all duration-500"
+          />
+        )}
+      </svg>
+      <span
+        className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold tabular"
+        style={{ color: over ? "var(--negative)" : undefined }}
+      >
+        {pct == null ? "—" : `${Math.round(pct * 100)}%`}
+      </span>
+    </div>
+  );
+}
+
+export default function MemberCard({ member }: { member: Member }) {
+  const members = useFam((s) => s.members);
+  const transactions = useFam((s) => s.transactions);
+  const alerts = useFam((s) => s.alerts);
+  const cards = useFam((s) => s.cards);
+  const settings = useFam((s) => s.settings);
+  const setMemberCap = useFam((s) => s.setMemberCap);
+
+  const { spend, velocity, spark } = useMemo(() => {
+    const state = { members, transactions, alerts, cards, settings };
+    const spend = memberMonthSpend(state, member.id);
+    const velocity = memberVelocity(state, member.id);
+
+    // 14-day daily spend buckets for the sparkline
+    const dayStart = new Date();
+    dayStart.setHours(0, 0, 0, 0);
+    const start = dayStart.getTime() - 13 * DAY;
+    const spark = new Array<number>(14).fill(0);
+    for (const t of transactions) {
+      if (t.memberId !== member.id || t.ts < start) continue;
+      const i = Math.min(13, Math.floor((t.ts - start) / DAY));
+      if (i >= 0) spark[i] += t.amount;
+    }
+    return { spend, velocity, spark };
+  }, [members, transactions, alerts, cards, settings, member.id]);
+
+  const cap = member.monthlyCap;
+  const pct = cap != null && cap > 0 ? spend / cap : null;
+  const over = cap != null && spend > cap;
+  const burst = velocity.last24 > 0 && velocity.last24 > velocity.dailyAvg * 3;
+
+  return (
+    <div className="card card-hover p-4 md:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <MemberBadge member={member} showRole size={34} />
+          <p className="mt-3 text-xl font-bold tabular">{fmtMoney(spend)}</p>
+          <p className="text-xs text-ink-dim">
+            this month
+            {cap != null ? (
+              <span className="tabular"> · cap {fmtMoney(cap)}</span>
+            ) : (
+              <span className="text-ink-faint"> · no cap</span>
+            )}
+            {over && cap != null && (
+              <span className="tabular font-medium text-negative">
+                {" "}
+                · {fmtMoney(spend - cap)} over
+              </span>
+            )}
+          </p>
+        </div>
+        <CapRing pct={pct} color={member.color} over={over} />
+      </div>
+
+      <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-3 py-2">
+        <span className="text-xs font-medium text-ink-dim">Monthly cap</span>
+        <CapInput
+          value={cap}
+          onCommit={(v) => setMemberCap(member.id, v)}
+          ariaLabel={`${member.name} monthly cap`}
+        />
+      </div>
+
+      {/* Velocity */}
+      <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+        <p className="text-xs text-ink-dim">
+          Last 24h{" "}
+          <span className="tabular font-semibold text-ink">
+            {fmtMoney(velocity.last24)}
+          </span>{" "}
+          vs{" "}
+          <span className="tabular">{fmtMoney(velocity.dailyAvg)}</span>/day avg
+        </p>
+        {burst && (
+          <span
+            className="chip text-warning"
+            style={{
+              background: "color-mix(in srgb, var(--warning) 14%, transparent)",
+            }}
+          >
+            <Flame size={11} />
+            Velocity spike
+          </span>
+        )}
+      </div>
+
+      {/* 14-day sparkline */}
+      <div className="mt-3">
+        <Sparkline data={spark} color={member.color} />
+        <div className="mt-1 flex justify-between text-[10px] text-ink-faint">
+          <span>14 days ago</span>
+          <span>today</span>
+        </div>
+      </div>
+    </div>
+  );
+}

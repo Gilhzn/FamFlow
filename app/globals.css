@@ -69,7 +69,14 @@ body {
     @apply inline-flex items-center justify-center gap-2 rounded-xl bg-surface-2 px-4 py-2.5 text-sm font-medium text-ink-dim transition-all duration-150 hover:bg-surface-3 hover:text-ink active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none;
   }
   .input {
-    @apply w-full rounded-xl bg-surface-2 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none ring-1 ring-transparent transition-all duration-150 focus:ring-accent/60 focus:bg-surface-3;
+    /* NOTE: `focus:ring-accent/60` is not resolvable in Tailwind 3 (accent is a
+       plain var() color without <alpha-value>), and it hard-errors @apply as
+       soon as any content file contains the token "input". Equivalent focus
+       ring is applied via the plain CSS rule below. */
+    @apply w-full rounded-xl bg-surface-2 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint outline-none ring-1 ring-transparent transition-all duration-150 focus:bg-surface-3;
+  }
+  .input:focus {
+    --tw-ring-color: color-mix(in srgb, var(--accent) 60%, transparent);
   }
   .chip {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;

@@ -1,3 +1,4 @@
+import { fmtMoney } from "./format";
 import {
   CATEGORY_MAP,
   CategoryId,
@@ -40,7 +41,10 @@ export interface Runway {
 
 export function computeRunway(state: LedgerState, now = Date.now()): Runway {
   const { start, daysInMonth } = monthWindow(now);
-  const daysElapsed = Math.max(1, Math.ceil((now - start) / DAY));
+  const daysElapsed = Math.min(
+    daysInMonth,
+    Math.max(1, Math.ceil((now - start) / DAY))
+  );
   const monthTx = state.transactions.filter((t) => inMonth(t, now));
   const spentSoFar = sum(monthTx);
 
@@ -118,7 +122,7 @@ export function computeSavingsTips(
         tips.push({
           id: "tip_delivery",
           title: `Food delivery is ${pct}% above your weekly average`,
-          body: `You've spent $${weekSpend.toFixed(0)} on delivery this week vs. a typical $${weeklyAvg.toFixed(0)}. Cooking at home on ${dayName}s (historical avg $${histAvg.toFixed(0)}/order) could save ~$${Math.max(5, weekSpend - weeklyAvg).toFixed(0)} this week.`,
+          body: `You've spent ${fmtMoney(Math.round(weekSpend))} on delivery this week vs. a typical ${fmtMoney(Math.round(weeklyAvg))}. Cooking at home on ${dayName}s (historical avg ${fmtMoney(Math.round(histAvg))}/order) could save ~${fmtMoney(Math.round(Math.max(5, weekSpend - weeklyAvg)))} this week.`,
           estWeeklySaving: Math.max(5, weekSpend - weeklyAvg),
           category: "food",
         });
@@ -135,7 +139,7 @@ export function computeSavingsTips(
     tips.push({
       id: "tip_coffee",
       title: `${coffee.length} café purchases this month`,
-      body: `Café visits total $${monthly.toFixed(0)}/month. Brewing at home 2 days a week would keep ~$${(monthly * 0.28).toFixed(0)} in the family budget.`,
+      body: `Café visits total ${fmtMoney(Math.round(monthly))}/month. Brewing at home 2 days a week would keep ~${fmtMoney(Math.round((monthly * 0.28)))} in the family budget.`,
       estWeeklySaving: (monthly * 0.28) / 4.3,
       category: "food",
     });
@@ -152,7 +156,7 @@ export function computeSavingsTips(
       tips.push({
         id: "tip_subs",
         title: "Streaming stack review",
-        body: `Recurring streaming services cost $${subMonthly.toFixed(0)}/month alongside $${sum(leisure30).toFixed(0)} of other leisure spending. Rotating one service off saves $${(subMonthly / 2).toFixed(0)}/month with zero lifestyle change.`,
+        body: `Recurring streaming services cost ${fmtMoney(Math.round(subMonthly))}/month alongside ${fmtMoney(Math.round(sum(leisure30)))} of other leisure spending. Rotating one service off saves ${fmtMoney(Math.round((subMonthly / 2)))}/month with zero lifestyle change.`,
         estWeeklySaving: subMonthly / 2 / 4.3,
         category: "leisure",
       });
@@ -283,7 +287,7 @@ export function runGovernanceChecks(
           kind: "budget",
           severity: "critical",
           title: `${member.name} exceeded their monthly cap`,
-          body: `$${spent.toFixed(0)} spent against a $${member.monthlyCap} cap.`,
+          body: `${fmtMoney(Math.round(spent))} spent against a $${member.monthlyCap} cap.`,
           memberId: member.id,
         })
       );
@@ -293,7 +297,7 @@ export function runGovernanceChecks(
           kind: "budget",
           severity: "warn",
           title: `${member.name} at ${Math.round((spent / member.monthlyCap) * 100)}% of cap`,
-          body: `$${(member.monthlyCap - spent).toFixed(0)} left this month.`,
+          body: `${fmtMoney(Math.round((member.monthlyCap - spent)))} left this month.`,
           memberId: member.id,
         })
       );
@@ -314,7 +318,7 @@ export function runGovernanceChecks(
           kind: "budget",
           severity: "warn",
           title: `${CATEGORY_MAP[newTx.category].label} over budget`,
-          body: `$${catSpent.toFixed(0)} against a $${cap} monthly cap.`,
+          body: `${fmtMoney(Math.round(catSpent))} against a $${cap} monthly cap.`,
         })
       );
     }
@@ -329,7 +333,7 @@ export function runGovernanceChecks(
           kind: "velocity",
           severity: "warn",
           title: `Spending velocity spike — ${member.name}`,
-          body: `$${v.last24.toFixed(0)} in 24h vs. a $${v.dailyAvg.toFixed(0)}/day average (${v.count24} transactions).`,
+          body: `${fmtMoney(Math.round(v.last24))} in 24h vs. a ${fmtMoney(Math.round(v.dailyAvg))}/day average (${v.count24} transactions).`,
           memberId: member.id,
         })
       );
@@ -345,7 +349,7 @@ export function runGovernanceChecks(
           kind: "runway",
           severity: "critical",
           title: "Overdraft trajectory detected",
-          body: `Current burn rate of $${runway.dailyBurn.toFixed(0)}/day projects $${runway.projectedTotal.toFixed(0)} by month-end — $${Math.abs(runway.projectedDelta).toFixed(0)} over budget (predicted dry on day ${runway.overdraftDay}).`,
+          body: `Current burn rate of ${fmtMoney(Math.round(runway.dailyBurn))}/day projects ${fmtMoney(Math.round(runway.projectedTotal))} by month-end — ${fmtMoney(Math.round(Math.abs(runway.projectedDelta)))} over budget (predicted dry on day ${runway.overdraftDay}).`,
         })
       );
     }

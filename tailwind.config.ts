@@ -54,12 +54,15 @@ const config: Config = {
       keyframes: {
         fadeUp: {
           from: { opacity: "0", transform: "translateY(8px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+          // End at transform:none — a persisted translateY(0) (fill-mode both)
+          // would make every animated wrapper a containing block for
+          // position:fixed descendants (modals, toasts).
+          to: { opacity: "1", transform: "none" },
         },
         fadeIn: { from: { opacity: "0" }, to: { opacity: "1" } },
         scaleIn: {
           from: { opacity: "0", transform: "scale(0.96)" },
-          to: { opacity: "1", transform: "scale(1)" },
+          to: { opacity: "1", transform: "none" },
         },
         pulseDot: {
           "0%, 100%": { opacity: "1" },
