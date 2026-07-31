@@ -6,6 +6,7 @@ import { CheckCheck, Megaphone, Send } from "lucide-react";
 import { useFam, useCurrentMember } from "@/lib/store";
 import { fmtRelative } from "@/lib/format";
 import { FamAlert } from "@/lib/types";
+import { useT } from "@/lib/i18n";
 
 const SEV_COLOR: Record<FamAlert["severity"], string> = {
   info: "var(--accent)",
@@ -14,6 +15,7 @@ const SEV_COLOR: Record<FamAlert["severity"], string> = {
 };
 
 export default function BroadcastCard() {
+  const { t, lang } = useT();
   const alerts = useFam((s) => s.alerts);
   const pushAlert = useFam((s) => s.pushAlert);
   const me = useCurrentMember();
@@ -32,11 +34,14 @@ export default function BroadcastCard() {
   );
 
   const send = () => {
+    // Alert text is rendered in the sender's current language at send time.
     pushAlert({
       kind: "budget",
       severity: "info",
-      title: "Governance broadcast test",
-      body: `${me?.name ?? "Admin"} sent a test alert — if you can see this on your device, realtime family sync is working.`,
+      title: t("admin.broadcast.testTitle"),
+      body: t("admin.broadcast.testBody", {
+        name: me?.name ?? t("common.admin"),
+      }),
       memberId: me?.id,
     });
     setSent(true);
@@ -52,10 +57,10 @@ export default function BroadcastCard() {
         </span>
         <div>
           <h2 className="text-sm font-semibold leading-tight">
-            Governance broadcast
+            {t("admin.broadcast.title")}
           </h2>
           <p className="text-[11px] text-ink-faint">
-            Pushes instantly to every family member&apos;s device
+            {t("admin.broadcast.subtitle")}
           </p>
         </div>
       </div>
@@ -71,7 +76,7 @@ export default function BroadcastCard() {
               className="inline-flex items-center gap-2"
             >
               <CheckCheck size={15} />
-              Broadcast delivered
+              {t("admin.broadcast.delivered")}
             </motion.span>
           ) : (
             <motion.span
@@ -82,19 +87,19 @@ export default function BroadcastCard() {
               className="inline-flex items-center gap-2"
             >
               <Send size={15} />
-              Send test alert to family
+              {t("admin.broadcast.send")}
             </motion.span>
           )}
         </AnimatePresence>
       </button>
 
       <p className="mt-4 text-[11px] font-medium uppercase tracking-wide text-ink-faint">
-        Recent family alerts (all sources)
+        {t("admin.broadcast.recent")}
       </p>
-      <div className="mt-1.5 max-h-64 flex-1 overflow-y-auto pr-1">
+      <div className="mt-1.5 max-h-64 flex-1 overflow-y-auto pe-1">
         {recent.length === 0 && (
           <p className="py-6 text-center text-xs text-ink-faint">
-            No family alerts yet — governance rules and broadcasts will appear here.
+            {t("admin.broadcast.empty")}
           </p>
         )}
         {recent.map((a) => (
@@ -113,7 +118,7 @@ export default function BroadcastCard() {
               <p className="mt-0.5 truncate text-xs text-ink-dim">{a.body}</p>
             </div>
             <span className="shrink-0 text-[11px] text-ink-faint">
-              {fmtRelative(a.ts)}
+              {fmtRelative(a.ts, lang)}
             </span>
           </div>
         ))}

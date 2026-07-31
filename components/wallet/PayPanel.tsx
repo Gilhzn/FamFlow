@@ -313,10 +313,11 @@ export default function PayPanel() {
                 >
                   <button onClick={pay} disabled={!ready} className="btn-primary w-full">
                     <Zap size={15} />
-                    Pay {amountValid ? fmtMoney(amountNum) : ""}
+                    {t("wallet.pay.cta")}
+                    {amountValid && <span dir="ltr">{fmtMoney(amountNum)}</span>}
                   </button>
                   <p className="mt-2 text-center text-[11px] text-ink-faint">
-                    Tip: an amount of exactly $6.66 simulates a decline
+                    {t("wallet.pay.tip")}
                   </p>
                 </motion.div>
               )}
@@ -338,7 +339,9 @@ export default function PayPanel() {
                         className="mt-3 flex items-center justify-center gap-1.5 overflow-hidden text-center text-xs font-medium text-positive"
                       >
                         <CheckCircle2 size={13} />
-                        {fmtMoney(amountNum)} charged to •••• {selected?.last4}
+                        <span dir="ltr">{fmtMoney(amountNum)}</span>
+                        {t("wallet.pay.chargedTo")}
+                        <span dir="ltr">•••• {selected?.last4}</span>
                       </motion.p>
                     )}
                   </AnimatePresence>
@@ -357,26 +360,26 @@ export default function PayPanel() {
                     <AlertCircle size={16} className="mt-0.5 shrink-0 text-negative" />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-negative">
-                        Payment declined
+                        {t("wallet.pay.declined")}
                       </p>
                       <p className="mt-0.5 text-xs leading-relaxed text-ink-dim">
-                        {declineMsg} Nothing was charged and nothing was logged.
+                        {declineKey ? t(declineKey) : null} {t("wallet.pay.declinedNote")}
                       </p>
                     </div>
                   </div>
                   <div className="mt-3 flex gap-2">
                     <button onClick={pay} className="btn-primary flex-1 !py-2 text-xs">
                       <RotateCcw size={13} />
-                      Retry payment
+                      {t("wallet.pay.retry")}
                     </button>
                     <button
                       onClick={() => {
                         setPhase("idle");
-                        setDeclineMsg(null);
+                        setDeclineKey(null);
                       }}
                       className="btn-ghost flex-1 !py-2 text-xs"
                     >
-                      Edit details
+                      {t("wallet.pay.edit")}
                     </button>
                   </div>
                 </motion.div>
@@ -396,11 +399,11 @@ export default function PayPanel() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 12, scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className="fixed inset-x-0 bottom-20 z-50 flex justify-center px-4 md:bottom-8 md:left-60"
+                className="fixed inset-x-0 bottom-20 z-50 flex justify-center px-4 md:bottom-8 md:start-60"
               >
                 <div className="flex items-center gap-2 rounded-xl bg-surface-3 px-4 py-2.5 text-sm font-medium shadow-pop">
                   <CheckCircle2 size={16} className="text-positive" />
-                  {toast}
+                  {t("wallet.pay.toast")}
                 </div>
               </motion.div>
             )}

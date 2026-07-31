@@ -6,7 +6,9 @@ import { useFam } from "@/lib/store";
 import { memberMonthSpend, memberVelocity } from "@/lib/insights";
 import { fmtMoney } from "@/lib/format";
 import { Member } from "@/lib/types";
+import { useT } from "@/lib/i18n";
 import MemberBadge from "@/components/MemberBadge";
+import { fill, Money } from "./i18nNodes";
 import CapInput from "./CapInput";
 import Sparkline from "./Sparkline";
 
@@ -51,6 +53,7 @@ function CapRing({
         )}
       </svg>
       <span
+        dir="ltr"
         className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold tabular"
         style={{ color: over ? "var(--negative)" : undefined }}
       >
@@ -65,6 +68,7 @@ function CapRing({
 }
 
 export default function MemberCard({ member }: { member: Member }) {
+  const { t } = useT();
   const members = useFam((s) => s.members);
   const transactions = useFam((s) => s.transactions);
   const alerts = useFam((s) => s.alerts);
@@ -103,18 +107,27 @@ export default function MemberCard({ member }: { member: Member }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <MemberBadge member={member} showRole size={34} />
-          <p className="mt-3 text-xl font-bold tabular">{fmtMoney(spend)}</p>
+          <p className="mt-3 text-xl font-bold tabular">
+            <span dir="ltr">{fmtMoney(spend)}</span>
+          </p>
           <p className="text-xs text-ink-dim">
-            this month
+            {t("admin.member.thisMonth")}
             {cap != null ? (
-              <span className="tabular"> · cap {fmtMoney(cap)}</span>
+              <span>
+                {" "}
+                {fill(t("admin.member.cap"), {
+                  amt: <Money>{fmtMoney(cap)}</Money>,
+                })}
+              </span>
             ) : (
-              <span className="text-ink-faint"> · no cap</span>
+              <span className="text-ink-faint"> {t("admin.member.noCap")}</span>
             )}
             {over && cap != null && (
-              <span className="tabular font-medium text-negative">
+              <span className="font-medium text-negative">
                 {" "}
-                · {fmtMoney(spend - cap)} over
+                {fill(t("admin.overBy"), {
+                  amt: <Money>{fmtMoney(spend - cap)}</Money>,
+                })}
               </span>
             )}
           </p>
@@ -123,23 +136,27 @@ export default function MemberCard({ member }: { member: Member }) {
       </div>
 
       <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-3 py-2">
-        <span className="text-xs font-medium text-ink-dim">Monthly cap</span>
+        <span className="text-xs font-medium text-ink-dim">
+          {t("admin.member.monthlyCap")}
+        </span>
         <CapInput
           value={cap}
           onCommit={(v) => setMemberCap(member.id, v)}
-          ariaLabel={`${member.name} monthly cap`}
+          ariaLabel={t("admin.capAria", { name: member.name })}
         />
       </div>
 
       {/* Velocity */}
       <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
         <p className="text-xs text-ink-dim">
-          Last 24h{" "}
-          <span className="tabular font-semibold text-ink">
-            {fmtMoney(velocity.last24)}
-          </span>{" "}
-          vs{" "}
-          <span className="tabular">{fmtMoney(velocity.dailyAvg)}</span>/day avg
+          {fill(t("admin.member.velocity"), {
+            last: (
+              <Money className="tabular font-semibold text-ink">
+                {fmtMoney(velocity.last24)}
+              </Money>
+            ),
+            avg: <Money>{fmtMoney(velocity.dailyAvg)}</Money>,
+          })}
         </p>
         {burst && (
           <span
@@ -149,17 +166,17 @@ export default function MemberCard({ member }: { member: Member }) {
             }}
           >
             <Flame size={11} />
-            Velocity spike
+            {t("admin.member.spike")}
           </span>
         )}
       </div>
 
-      {/* 14-day sparkline */}
-      <div className="mt-3">
+      {/* 14-day sparkline — chronology always runs left→right, so pin LTR */}
+      <div className="mt-3" dir="ltr">
         <Sparkline data={spark} color={member.color} />
         <div className="mt-1 flex justify-between text-[10px] text-ink-faint">
-          <span>14 days ago</span>
-          <span>today</span>
+          <span>{t("admin.member.days14")}</span>
+          <span>{t("admin.member.today")}</span>
         </div>
       </div>
     </div>

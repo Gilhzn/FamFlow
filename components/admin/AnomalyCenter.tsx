@@ -6,10 +6,13 @@ import { Check, ShieldAlert, ShieldCheck } from "lucide-react";
 import { useFam } from "@/lib/store";
 import { detectAnomalies } from "@/lib/insights";
 import { fmtDay, fmtMoney } from "@/lib/format";
+import { useT } from "@/lib/i18n";
+import { fill, Money } from "./i18nNodes";
 
 const REVIEWED_KEY = "famflow_reviewed_anomalies_v1";
 
 export default function AnomalyCenter() {
+  const { t, lang } = useT();
   const members = useFam((s) => s.members);
   const transactions = useFam((s) => s.transactions);
   const alerts = useFam((s) => s.alerts);
@@ -78,10 +81,10 @@ export default function AnomalyCenter() {
           </span>
           <div>
             <h2 className="text-sm font-semibold leading-tight">
-              Anomaly review center
+              {t("admin.anomaly.title")}
             </h2>
             <p className="text-[11px] text-ink-faint">
-              Recurring-charge spikes & unrecognized micro-charges
+              {t("admin.anomaly.subtitle")}
             </p>
           </div>
         </div>
@@ -92,7 +95,7 @@ export default function AnomalyCenter() {
               background: "color-mix(in srgb, var(--warning) 14%, transparent)",
             }}
           >
-            {visible.length} open
+            {t("admin.anomaly.open", { n: visible.length })}
           </span>
         )}
       </div>
@@ -116,7 +119,7 @@ export default function AnomalyCenter() {
                 <ShieldCheck size={20} />
               </span>
               <p className="text-sm font-medium text-positive">
-                No anomalies — all recurring charges within normal bands.
+                {t("admin.anomaly.empty")}
               </p>
             </motion.div>
           ) : (
@@ -143,34 +146,43 @@ export default function AnomalyCenter() {
                             background: `color-mix(in srgb, ${tone} 14%, transparent)`,
                           }}
                         >
-                          {spike ? "Recurring spike" : "Unrecognized micro-charge"}
+                          {spike
+                            ? t("admin.anomaly.spikeBadge")
+                            : t("admin.anomaly.microBadge")}
                         </span>
                         <p className="min-w-0 truncate text-[13px] font-medium">
                           {a.label}
                         </p>
                       </div>
                       <p className="mt-1 text-xs text-ink-dim">
-                        <span className="tabular font-semibold text-ink">
-                          {fmtMoney(a.amount)}
+                        {spike
+                          ? fill(t("admin.anomaly.vsExpected"), {
+                              amt: (
+                                <Money className="tabular font-semibold text-ink">
+                                  {fmtMoney(a.amount)}
+                                </Money>
+                              ),
+                              exp: <Money>{fmtMoney(a.expected)}</Money>,
+                              dev: (
+                                <Money
+                                  className="tabular font-medium"
+                                  style={{ color: tone }}
+                                >
+                                  +{a.deviationPct}%
+                                </Money>
+                              ),
+                            })
+                          : fill(t("admin.anomaly.neverSeen"), {
+                              amt: (
+                                <Money className="tabular font-semibold text-ink">
+                                  {fmtMoney(a.amount)}
+                                </Money>
+                              ),
+                            })}
+                        <span className="text-ink-faint">
+                          {" "}
+                          · {fmtDay(a.ts, lang)}
                         </span>
-                        {spike ? (
-                          <>
-                            {" "}
-                            vs expected{" "}
-                            <span className="tabular">
-                              {fmtMoney(a.expected)}
-                            </span>{" "}
-                            <span
-                              className="tabular font-medium"
-                              style={{ color: tone }}
-                            >
-                              +{a.deviationPct}%
-                            </span>
-                          </>
-                        ) : (
-                          <> at a never-seen merchant</>
-                        )}
-                        <span className="text-ink-faint"> · {fmtDay(a.ts)}</span>
                       </p>
                     </div>
                     <button
@@ -180,7 +192,7 @@ export default function AnomalyCenter() {
                       className="btn-ghost shrink-0 self-start px-3 py-1.5 text-xs sm:self-center"
                     >
                       <Check size={13} />
-                      Mark reviewed
+                      {t("admin.anomaly.markReviewed")}
                     </button>
                   </div>
                 </motion.div>
