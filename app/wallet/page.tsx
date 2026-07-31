@@ -2,12 +2,14 @@
 
 import { Wallet } from "lucide-react";
 import { useCurrentMember } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import CardsSection from "@/components/wallet/CardsSection";
 import PayPanel from "@/components/wallet/PayPanel";
 import PaymentActivity from "@/components/wallet/PaymentActivity";
 
 export default function WalletPage() {
   const me = useCurrentMember();
+  const { t } = useT();
   if (!me) return null;
 
   return (
@@ -17,12 +19,9 @@ export default function WalletPage() {
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-accent">
             <Wallet size={18} />
           </span>
-          Wallet
+          {t("wallet.title")}
         </h1>
-        <p className="mt-1 text-sm text-ink-dim">
-          Tokenized cards and in-app payments that log straight to the family
-          ledger.
-        </p>
+        <p className="mt-1 text-sm text-ink-dim">{t("wallet.subtitle")}</p>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-5">

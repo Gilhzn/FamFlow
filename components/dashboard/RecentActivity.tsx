@@ -6,8 +6,10 @@ import { ArrowRight, Receipt } from "lucide-react";
 import { useFam } from "@/lib/store";
 import { fmtMoney, fmtRelative } from "@/lib/format";
 import { CATEGORY_MAP } from "@/lib/types";
+import { useT } from "@/lib/i18n";
 
 export default function RecentActivity() {
+  const { t, lang } = useT();
   const transactions = useFam((s) => s.transactions);
   const members = useFam((s) => s.members);
 

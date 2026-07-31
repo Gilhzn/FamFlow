@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { CreditCard, Loader2, Lock, Sparkles, X } from "lucide-react";
 import { useFam, useCurrentMember } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 import {
   createToken,
   detectBrand,
@@ -56,6 +57,7 @@ export default function AddCardModal({
 }) {
   const me = useCurrentMember();
   const addCard = useFam((s) => s.addCard);
+  const { t } = useT();
 
   const [number, setNumber] = useState("");
   const [exp, setExp] = useState("");
@@ -146,24 +148,24 @@ export default function AddCardModal({
     const errs: Errors = {};
     const digits = number.replace(/\D/g, "");
 
-    if (!brand) errs.number = "Enter a Visa, Mastercard or Amex number";
+    if (!brand) errs.number = t("wallet.err.brand");
     else if (digits.length !== cardNumberLength(brand))
-      errs.number = "Card number is incomplete";
-    else if (!luhnCheck(digits)) errs.number = "Invalid card number (failed check digit)";
+      errs.number = t("wallet.err.incomplete");
+    else if (!luhnCheck(digits)) errs.number = t("wallet.err.luhn");
 
     const m = exp.match(/^(\d{2})\/(\d{2})$/);
     let expMonth = 0;
     let expYear = 0;
-    if (!m) errs.exp = "Use MM/YY";
+    if (!m) errs.exp = t("wallet.err.expFormat");
     else {
       expMonth = parseInt(m[1], 10);
       expYear = normalizeYear(parseInt(m[2], 10));
-      if (expMonth < 1 || expMonth > 12) errs.exp = "Invalid month";
-      else if (isExpired(expMonth, expYear)) errs.exp = "Card is expired";
+      if (expMonth < 1 || expMonth > 12) errs.exp = t("wallet.err.expMonth");
+      else if (isExpired(expMonth, expYear)) errs.exp = t("wallet.err.expired");
     }
 
     const cvcLen = brand === "amex" ? 4 : 3;
-    if (cvc.length !== cvcLen) errs.cvc = `${cvcLen} digits`;
+    if (cvc.length !== cvcLen) errs.cvc = t("wallet.err.cvc", { n: cvcLen });
 
     if (Object.keys(errs).length) {
       setErrors(errs);
@@ -197,8 +199,8 @@ export default function AddCardModal({
       setErrors({
         form:
           err instanceof StripeMockError
-            ? err.message
-            : "Something went wrong tokenizing the card.",
+            ? t(`wallet.stripeErr.${err.code}`)
+            : t("wallet.err.tokenize"),
       });
       setBusy(false);
     }

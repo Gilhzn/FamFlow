@@ -159,28 +159,30 @@ export default function RunwayHero() {
           </div>
           <div className="min-w-0">
             <p className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-ink-faint">
-              <Flame size={11} /> Daily burn
+              <Flame size={11} /> {t("dashboard.runway.dailyBurn")}
             </p>
             <p className="tabular mt-1 truncate text-xl font-semibold md:text-2xl">
-              {fmtMoney(runway.dailyBurn)}
-              <span className="text-sm font-normal text-ink-faint">/day</span>
+              <span dir="ltr">{fmtMoney(runway.dailyBurn)}</span>
+              <span className="text-sm font-normal text-ink-faint">
+                {t("dashboard.runway.perDay")}
+              </span>
             </p>
           </div>
           <div className="min-w-0">
             <p className="flex items-center gap-1 text-[11px] uppercase tracking-wide text-ink-faint">
-              <CalendarDays size={11} /> Month progress
+              <CalendarDays size={11} /> {t("dashboard.runway.monthProgress")}
             </p>
             <p className="tabular mt-1 truncate text-xl font-semibold md:text-2xl">
               {runway.daysElapsed}
               <span className="text-sm font-normal text-ink-faint">
-                /{runway.daysInMonth} days
+                {t("dashboard.runway.ofDays", { n: runway.daysInMonth })}
               </span>
             </p>
           </div>
         </div>
 
-        {/* Cumulative spend + projection chart */}
-        <div className="mt-5 h-36 w-full md:h-44">
+        {/* Cumulative spend + projection chart (recharts requires LTR) */}
+        <div dir="ltr" className="mt-5 h-36 w-full md:h-44">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
@@ -199,7 +201,9 @@ export default function RunwayHero() {
                 ticks={[1, Math.round(runway.daysInMonth / 2), runway.daysInMonth]}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(d: number) => `d${d}`}
+                tickFormatter={(d: number) =>
+                  lang === "he" ? String(d) : `d${d}`
+                }
                 tick={{ fontSize: 10 }}
               />
               <YAxis hide domain={[0, yMax]} />
@@ -213,7 +217,7 @@ export default function RunwayHero() {
                 strokeDasharray="3 4"
                 strokeOpacity={0.7}
                 label={{
-                  value: "budget",
+                  value: t("dashboard.runway.chart.budgetLine"),
                   position: "insideTopRight",
                   fill: "var(--ink-faint)",
                   fontSize: 10,
@@ -253,9 +257,11 @@ export default function RunwayHero() {
         >
           <CheckCircle2 size={16} className="shrink-0 text-positive" />
           <p className="min-w-0 text-[13px] font-medium text-positive">
-            On track —{" "}
-            <span className="tabular">{fmtMoney(runway.projectedDelta)}</span>{" "}
-            headroom projected at month end.
+            {t("dashboard.runway.onTrack.pre")}{" "}
+            <span dir="ltr" className="tabular">
+              {fmtMoney(runway.projectedDelta)}
+            </span>{" "}
+            {t("dashboard.runway.onTrack.post")}
           </p>
         </div>
       ) : (
@@ -268,13 +274,13 @@ export default function RunwayHero() {
             className="shrink-0 animate-pulse-dot text-negative"
           />
           <p className="min-w-0 text-[13px] font-medium text-negative">
-            On this trajectory you&apos;ll be{" "}
-            <span className="tabular font-semibold">
+            {t("dashboard.runway.over.pre")}{" "}
+            <span dir="ltr" className="tabular font-semibold">
               {fmtMoney(Math.abs(runway.projectedDelta))}
             </span>{" "}
-            over budget
+            {t("dashboard.runway.over.post")}
             {runway.overdraftDay != null && (
-              <> by day {runway.overdraftDay}</>
+              <> {t("dashboard.runway.over.byDay", { n: runway.overdraftDay })}</>
             )}
             .
           </p>

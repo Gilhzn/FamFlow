@@ -6,10 +6,12 @@ import { ArrowRight, ShieldAlert } from "lucide-react";
 import { useFam } from "@/lib/store";
 import { detectAnomalies } from "@/lib/insights";
 import { fmtMoney, fmtRelative } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
 const DAY = 86_400_000;
 
 export default function AnomalyStrip() {
+  const { t, lang } = useT();
   const members = useFam((s) => s.members);
   const transactions = useFam((s) => s.transactions);
   const alerts = useFam((s) => s.alerts);
@@ -44,9 +46,9 @@ export default function AnomalyStrip() {
             <ShieldAlert size={15} />
           </span>
           <p className="text-[13px] font-semibold text-warning">
-            {anomalies.length}{" "}
-            {anomalies.length === 1 ? "anomaly" : "anomalies"} in the last 14
-            days
+            {anomalies.length === 1
+              ? t("dashboard.anomaly.one")
+              : t("dashboard.anomaly.many", { n: anomalies.length })}
           </p>
         </div>
 
@@ -54,17 +56,23 @@ export default function AnomalyStrip() {
           {top.map((a) => (
             <p key={a.txId + a.kind} className="min-w-0 truncate text-xs text-ink-dim">
               <span className="font-medium text-ink">{a.label}</span>{" "}
-              <span className="tabular">{fmtMoney(a.amount)}</span>
+              <span dir="ltr" className="tabular">
+                {fmtMoney(a.amount)}
+              </span>
               {a.kind === "recurring-spike" ? (
                 <>
                   {" "}
-                  — {a.deviationPct}% above its usual{" "}
-                  <span className="tabular">{fmtMoney(a.expected)}</span>
+                  {t("dashboard.anomaly.above", { pct: a.deviationPct })}{" "}
+                  <span dir="ltr" className="tabular">
+                    {fmtMoney(a.expected)}
+                  </span>
                 </>
               ) : (
-                <> — unrecognized micro-charge</>
+                <> {t("dashboard.anomaly.micro")}</>
               )}{" "}
-              <span className="text-ink-faint">· {fmtRelative(a.ts)}</span>
+              <span className="text-ink-faint">
+                · {fmtRelative(a.ts, lang)}
+              </span>
             </p>
           ))}
         </div>
@@ -73,8 +81,8 @@ export default function AnomalyStrip() {
           href="/admin"
           className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-lg px-2.5 py-1.5 text-xs font-semibold text-warning transition-colors hover:bg-surface-3 sm:self-center"
         >
-          Review in Admin
-          <ArrowRight size={13} />
+          {t("dashboard.anomaly.review")}
+          <ArrowRight size={13} className="rtl:rotate-180" />
         </Link>
       </div>
     </section>

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useFam } from "@/lib/store";
+import { useT, translate } from "@/lib/i18n";
 import { CATEGORIES, CategoryDef } from "@/lib/types";
 import PeriodToggle from "@/components/analytics/PeriodToggle";
 import SummaryStats from "@/components/analytics/SummaryStats";
@@ -22,6 +23,7 @@ const DAY = 86_400_000;
 export default function AnalyticsPage() {
   const transactions = useFam((s) => s.transactions);
   const members = useFam((s) => s.members);
+  const { t, lang } = useT();
 
   const [granularity, setGranularityRaw] = useState<Granularity>("month");
   const [offset, setOffset] = useState(0);
@@ -48,7 +50,7 @@ export default function AnalyticsPage() {
       .filter((t) => t.ts >= prevWin.start && t.ts < prevWin.end)
       .reduce((a, t) => a + t.amount, 0);
 
-    const buckets = buildBuckets(granularity, win, inWin);
+    const buckets = buildBuckets(granularity, win, inWin, lang);
     const total = inWin.reduce((a, t) => a + t.amount, 0);
 
     // Average per day (per hour when viewing a single day). For the current,
@@ -61,18 +63,18 @@ export default function AnalyticsPage() {
         ? Math.min(24, Math.max(1, Math.ceil((now - win.start) / HOUR)))
         : 24;
       avg = total / units;
-      avgLabel = "Avg / hour";
+      avgLabel = translate(lang, "analytics.avgHour");
     } else {
       const units = current
         ? Math.min(win.days, Math.max(1, Math.ceil((now - win.start) / DAY)))
         : win.days;
       avg = total / units;
-      avgLabel = "Avg / day";
+      avgLabel = translate(lang, "analytics.avgDay");
     }
 
     const slices = CATEGORIES.map((c) => ({
       id: c.id,
-      label: c.label,
+      label: translate(lang, `cat.${c.id}`),
       emoji: c.emoji,
       color: c.color,
       value: inWin
@@ -97,7 +99,7 @@ export default function AnalyticsPage() {
     }));
 
     return {
-      label: periodLabel(granularity, offset, win.start),
+      label: periodLabel(granularity, offset, win.start, lang),
       buckets,
       total,
       avg,
@@ -107,7 +109,7 @@ export default function AnalyticsPage() {
       deltaPct,
       memberRows,
     };
-  }, [transactions, members, granularity, offset]);
+  }, [transactions, members, granularity, offset, lang]);
 
   const periodKey = `${granularity}:${offset}`;
 
@@ -116,11 +118,9 @@ export default function AnalyticsPage() {
       <div className="mx-auto max-w-5xl">
         <header className="animate-fade-up">
           <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
-            Analytics
+            {t("analytics.title")}
           </h1>
-          <p className="mt-0.5 text-sm text-ink-dim">
-            Family spending, sliced by time.
-          </p>
+          <p className="mt-0.5 text-sm text-ink-dim">{t("analytics.subtitle")}</p>
         </header>
 
         <div className="mt-5 animate-fade-up" style={{ animationDelay: "60ms" }}>
@@ -135,7 +135,7 @@ export default function AnalyticsPage() {
 
         <motion.div
           key={periodKey}
-          initial={{ opacity: 0, x: dir * 24 }}
+          initial={{ opacity: 0, x: dir * (lang === "he" ? -24 : 24) }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
           className="mt-4 space-y-4 md:mt-5 md:space-y-5"
@@ -146,11 +146,13 @@ export default function AnalyticsPage() {
             avgLabel={data.avgLabel}
             topCategory={data.topCategory}
             deltaPct={data.deltaPct}
-            prevLabel={`prev ${granularity}`}
+            prevLabel={t(`analytics.vsPrev.${granularity}`)}
           />
 
           <section className="card p-4 md:p-6">
-            <h2 className="mb-4 text-sm font-semibold">Spending over time</h2>
+            <h2 className="mb-4 text-sm font-semibold">
+              {t("analytics.spendingOverTime")}
+            </h2>
             <SpendChart
               buckets={data.buckets}
               granularity={granularity}
@@ -160,12 +162,16 @@ export default function AnalyticsPage() {
 
           <div className="grid gap-4 md:grid-cols-2 md:gap-5">
             <section className="card min-w-0 p-4 md:p-6">
-              <h2 className="mb-4 text-sm font-semibold">Category breakdown</h2>
+              <h2 className="mb-4 text-sm font-semibold">
+                {t("analytics.categoryBreakdown")}
+              </h2>
               <CategoryDonut slices={data.slices} total={data.total} />
             </section>
 
             <section className="card min-w-0 p-4 md:p-6">
-              <h2 className="mb-4 text-sm font-semibold">By member</h2>
+              <h2 className="mb-4 text-sm font-semibold">
+                {t("analytics.byMember")}
+              </h2>
               <MemberBars rows={data.memberRows} />
             </section>
           </div>

@@ -47,6 +47,7 @@ function dominantCategory(rows: EditableRow[]): CategoryId {
 }
 
 export default function ScanPage() {
+  const { t } = useT();
   const me = useCurrentMember();
   const transactions = useFam((s) => s.transactions);
   const addTransaction = useFam((s) => s.addTransaction);
@@ -54,6 +55,7 @@ export default function ScanPage() {
   const [phase, setPhase] = useState<Phase>("capture");
   const [image, setImage] = useState<ImageData | null>(null);
   const [step, setStep] = useState(0);
+  // Holds an i18n key (scan.err*) so the banner re-translates on language switch.
   const [error, setError] = useState<string | null>(null);
 
   const [mode, setMode] = useState<"live" | "mock" | null>(null);
@@ -75,7 +77,7 @@ export default function ScanPage() {
         fileName: file.name,
       });
     };
-    reader.onerror = () => setError("Couldn't read that image — try another one.");
+    reader.onerror = () => setError("scan.errRead");
     reader.readAsDataURL(file);
   }, []);
 
@@ -161,7 +163,7 @@ export default function ScanPage() {
       setCategory(dominantCategory(nextRows));
       setPhase("review");
     } catch {
-      setError("Analysis failed — check your connection and try again.");
+      setError("scan.errAnalyze");
       setPhase("capture");
     }
   }, [image, transactions]);
@@ -198,7 +200,7 @@ export default function ScanPage() {
     const items: ReceiptItem[] = rows
       .filter((r) => isFinite(parseFloat(r.price)) && parseFloat(r.price) > 0)
       .map((r) => ({
-        name: r.name.trim() || "Unnamed item",
+        name: r.name.trim() || t("scan.unnamedItem"),
         price: Math.round(parseFloat(r.price) * 100) / 100,
         historicalPrice: r.historicalPrice,
         matched: r.matched,
@@ -217,18 +219,16 @@ export default function ScanPage() {
     });
     setLoggedTx(tx);
     setPhase("logged");
-  }, [me, rows, merchant, category, addTransaction]);
+  }, [me, rows, merchant, category, addTransaction, t]);
 
   return (
     <div className="p-4 md:p-8">
       <div className="mx-auto w-full max-w-2xl">
         <header className="mb-5 animate-fade-up md:mb-7">
           <h1 className="text-xl font-bold tracking-tight md:text-2xl">
-            AI Vision Scan
+            {t("scan.title")}
           </h1>
-          <p className="mt-1 text-sm text-ink-dim">
-            Photo → line items → price history → ledger, in one flow.
-          </p>
+          <p className="mt-1 text-sm text-ink-dim">{t("scan.subtitle")}</p>
         </header>
 
         <AnimatePresence>
@@ -240,7 +240,7 @@ export default function ScanPage() {
               className="mb-4 flex items-center gap-2.5 rounded-xl bg-[color-mix(in_srgb,var(--negative)_12%,transparent)] px-4 py-3 text-sm text-negative"
             >
               <TriangleAlert size={16} className="shrink-0" />
-              {error}
+              {t(error)}
             </motion.div>
           )}
         </AnimatePresence>
@@ -288,32 +288,34 @@ export default function ScanPage() {
               <Check size={30} strokeWidth={2.6} />
             </motion.div>
             <div>
-              <p className="text-base font-semibold">Logged to ledger</p>
+              <p className="text-base font-semibold">{t("scan.loggedTitle")}</p>
               <p className="mt-1 text-sm text-ink-dim">
-                <span className="tabular font-semibold text-ink">
+                <span dir="ltr" className="tabular font-semibold text-ink">
                   {fmtMoney(loggedTx.amount)}
                 </span>{" "}
-                at {loggedTx.label}
+                {t("scan.loggedAt", { merchant: loggedTx.label })}
                 {loggedTx.items?.length
-                  ? ` · ${loggedTx.items.length} item${
-                      loggedTx.items.length === 1 ? "" : "s"
+                  ? ` · ${
+                      loggedTx.items.length === 1
+                        ? t("scan.itemsOne")
+                        : t("scan.itemsMany", { n: loggedTx.items.length })
                     }`
                   : ""}
               </p>
               {mode === "mock" && (
                 <p className="mt-1.5 text-xs text-ink-faint">
-                  Extracted with mock vision (no API key configured).
+                  {t("scan.mockNote")}
                 </p>
               )}
             </div>
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
               <Link href="/ledger" className="btn-primary">
-                View in ledger
-                <ArrowRight size={15} />
+                {t("scan.viewLedger")}
+                <ArrowRight size={15} className="rtl:rotate-180" />
               </Link>
               <button onClick={reset} className="btn-ghost">
                 <RotateCcw size={14} />
-                Scan another
+                {t("scan.scanAnother")}
               </button>
             </div>
           </motion.div>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trash2 } from "lucide-react";
 import { WalletCard } from "@/lib/types";
 import type { CardBrand } from "@/lib/stripe-mock";
+import { useT } from "@/lib/i18n";
 
 export const BRAND_GRADIENT: Record<CardBrand, string> = {
   visa: "linear-gradient(135deg, #2b4acb 0%, #4c3fd4 55%, #7048e8 100%)",
@@ -69,6 +70,7 @@ interface Props {
 
 export default function CardVisual({ card, holderName, ownerLabel, onRemove }: Props) {
   const [confirming, setConfirming] = useState(false);
+  const { t } = useT();
   const masked =
     card.brand === "amex"
       ? `•••• •••••• •${card.last4}`
@@ -105,8 +107,10 @@ export default function CardVisual({ card, holderName, ownerLabel, onRemove }: P
       />
 
       {/* Top-right corner is reserved for the remove button; the brand
-          wordmark lives bottom-right so the two never collide. */}
-      <div className="relative flex h-full flex-col justify-between p-4 sm:p-5">
+          wordmark lives bottom-right so the two never collide.
+          A payment card is a real-world LTR object — force LTR so the
+          number / exp / brand keep the canonical card layout in Hebrew too. */}
+      <div dir="ltr" className="relative flex h-full flex-col justify-between p-4 sm:p-5">
         <div className="flex items-start justify-between">
           <ChipGlyph />
         </div>
@@ -141,7 +145,7 @@ export default function CardVisual({ card, holderName, ownerLabel, onRemove }: P
 
       {onRemove && (
         <button
-          aria-label="Remove card"
+          aria-label={t("wallet.removeCardAria")}
           onClick={() => setConfirming(true)}
           className="absolute right-3 top-3 rounded-lg bg-black/25 p-1.5 text-white/70 opacity-60 backdrop-blur-sm transition-all hover:bg-black/45 hover:text-white group-hover:opacity-100"
         >
@@ -158,22 +162,25 @@ export default function CardVisual({ card, holderName, ownerLabel, onRemove }: P
             exit={{ opacity: 0 }}
             className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/70 p-4 backdrop-blur-sm"
           >
-            <p className="text-sm font-semibold">Remove this card?</p>
+            <p className="text-sm font-semibold">{t("wallet.removeConfirm")}</p>
             <p className="-mt-2 text-xs text-white/60">
-              {card.brand} •••• {card.last4} will be detached.
+              <span dir="ltr">
+                {card.brand} •••• {card.last4}
+              </span>{" "}
+              {t("wallet.removeDetached")}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => onRemove?.()}
                 className="rounded-xl bg-negative px-4 py-2 text-xs font-semibold text-white transition-all hover:brightness-110 active:scale-95"
               >
-                Remove
+                {t("wallet.remove")}
               </button>
               <button
                 onClick={() => setConfirming(false)}
                 className="rounded-xl bg-white/15 px-4 py-2 text-xs font-semibold text-white transition-all hover:bg-white/25 active:scale-95"
               >
-                Keep
+                {t("wallet.keep")}
               </button>
             </div>
           </motion.div>

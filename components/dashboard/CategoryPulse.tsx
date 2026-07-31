@@ -5,8 +5,10 @@ import { useFam } from "@/lib/store";
 import { inMonth, sum } from "@/lib/insights";
 import { fmtMoney } from "@/lib/format";
 import { CATEGORIES } from "@/lib/types";
+import { useT } from "@/lib/i18n";
 
 export default function CategoryPulse() {
+  const { t } = useT();
   const transactions = useFam((s) => s.transactions);
   const caps = useFam((s) => s.settings.categoryCaps);
 
@@ -25,7 +27,7 @@ export default function CategoryPulse() {
             <div className="flex items-center gap-2">
               <span className="text-base leading-none">{cat.emoji}</span>
               <p className="min-w-0 flex-1 truncate text-xs font-medium text-ink-dim">
-                {cat.label}
+                {t(`cat.${cat.id}`)}
               </p>
             </div>
             <p
@@ -33,10 +35,18 @@ export default function CategoryPulse() {
                 over ? "text-negative" : "text-ink"
               }`}
             >
-              {fmtMoney(spend, { compact: true })}
+              <span dir="ltr">{fmtMoney(spend, { compact: true })}</span>
             </p>
             <p className="tabular mt-0.5 text-[11px] text-ink-faint">
-              {cap != null ? `of ${fmtMoney(cap, { compact: true })} cap` : "no cap set"}
+              {cap != null ? (
+                <>
+                  {t("dashboard.pulse.ofCap.pre")}{" "}
+                  <span dir="ltr">{fmtMoney(cap, { compact: true })}</span>{" "}
+                  {t("dashboard.pulse.ofCap.post")}
+                </>
+              ) : (
+                t("dashboard.pulse.noCap")
+              )}
             </p>
             <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
               <motion.div
@@ -56,7 +66,9 @@ export default function CategoryPulse() {
             </div>
             {over && (
               <p className="tabular mt-1.5 text-[11px] font-semibold text-negative">
-                {fmtMoney(spend - (cap as number))} over
+                {t("dashboard.pulse.over.pre")}{" "}
+                <span dir="ltr">{fmtMoney(spend - (cap as number))}</span>{" "}
+                {t("dashboard.pulse.over.post")}
               </p>
             )}
           </div>
