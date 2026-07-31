@@ -7,6 +7,7 @@ import { ArrowRight, Check, RotateCcw, TriangleAlert } from "lucide-react";
 import { useFam, useCurrentMember } from "@/lib/store";
 import { CATEGORIES, CategoryId, ReceiptItem, Transaction, uid } from "@/lib/types";
 import { fmtMoney } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 import { PRODUCT_REGISTRY } from "@/lib/seed";
 import { matchHistoricalPrices } from "@/lib/vision";
 import { mockExtract, VisionPayload } from "@/lib/vision-mock";

@@ -1,4 +1,103 @@
 import type { Dict } from "../i18n";
 
-// Filled by the scan translation pass.
-export const scanDict: Dict = { en: {}, he: {} };
+export const scanDict: Dict = {
+  en: {
+    "scan.title": "AI Vision Scan",
+    "scan.subtitle": "Photo → line items → price history → ledger, in one flow.",
+
+    "scan.errRead": "Couldn't read that image — try another one.",
+    "scan.errAnalyze": "Analysis failed — check your connection and try again.",
+
+    "scan.captureAria": "Capture receipt photo",
+    "scan.snapTitle": "Snap a receipt or product",
+    "scan.snapHint":
+      "Claude Vision reads the line items, matches them against your family's purchase history, and preps the ledger entry.",
+    "scan.tapCapture": "Tap to capture · drop an image",
+    "scan.previewAlt": "Selected receipt",
+    "scan.removeImage": "Remove image",
+    "scan.retake": "Retake",
+    "scan.analyze": "Analyze with AI",
+
+    "scan.step.upload": "Uploading",
+    "scan.step.reading": "AI reading",
+    "scan.step.matching": "Matching history",
+
+    "scan.extracted": "Extracted receipt",
+    "scan.mockChip": "Mock vision",
+    "scan.liveChip": "Claude Vision",
+    "scan.matchOne": "1 history match",
+    "scan.matchMany": "{n} history matches",
+    "scan.merchant": "Merchant",
+    "scan.merchantPlaceholder": "Merchant name",
+    "scan.itemName": "Item name",
+    "scan.itemPrice": "Item price",
+    "scan.removeItem": "Remove {name}",
+    "scan.itemFallback": "item",
+    "scan.historyMatch": "History match:",
+    "scan.newItem": "New item — no purchase history",
+    "scan.noItems": "No line items detected — add them manually below.",
+    "scan.addItem": "Add item",
+    "scan.ledgerCategory": "Ledger category",
+    "scan.logPre": "Log",
+    "scan.logPost": "to ledger",
+    "scan.unnamedItem": "Unnamed item",
+
+    "scan.loggedTitle": "Logged to ledger",
+    "scan.loggedAt": "at {merchant}",
+    "scan.itemsOne": "1 item",
+    "scan.itemsMany": "{n} items",
+    "scan.mockNote": "Extracted with mock vision (no API key configured).",
+    "scan.viewLedger": "View in ledger",
+    "scan.scanAnother": "Scan another",
+  },
+  he: {
+    "scan.title": "סריקת AI Vision",
+    "scan.subtitle":
+      "צילום ← שורות פריטים ← היסטוריית מחירים ← לדג'ר, בזרימה אחת.",
+
+    "scan.errRead": "לא הצלחנו לקרוא את התמונה — נסו תמונה אחרת.",
+    "scan.errAnalyze": "הניתוח נכשל — בדקו את החיבור ונסו שוב.",
+
+    "scan.captureAria": "צילום תמונת קבלה",
+    "scan.snapTitle": "צלמו קבלה או מוצר",
+    "scan.snapHint":
+      "Claude Vision קורא את שורות הפריטים, מצליב אותן מול היסטוריית הקניות של המשפחה ומכין את הרישום ללדג'ר.",
+    "scan.tapCapture": "הקישו לצילום · או גררו תמונה",
+    "scan.previewAlt": "הקבלה שנבחרה",
+    "scan.removeImage": "הסרת התמונה",
+    "scan.retake": "צילום מחדש",
+    "scan.analyze": "ניתוח עם AI",
+
+    "scan.step.upload": "העלאה",
+    "scan.step.reading": "קריאת AI",
+    "scan.step.matching": "הצלבת היסטוריה",
+
+    "scan.extracted": "הקבלה שפוענחה",
+    "scan.mockChip": "ראייה מדומה",
+    "scan.liveChip": "Claude Vision",
+    "scan.matchOne": "התאמה אחת להיסטוריה",
+    "scan.matchMany": "{n} התאמות להיסטוריה",
+    "scan.merchant": "בית עסק",
+    "scan.merchantPlaceholder": "שם בית העסק",
+    "scan.itemName": "שם הפריט",
+    "scan.itemPrice": "מחיר הפריט",
+    "scan.removeItem": "הסרת {name}",
+    "scan.itemFallback": "פריט",
+    "scan.historyMatch": "התאמה מההיסטוריה:",
+    "scan.newItem": "פריט חדש — אין היסטוריית רכישות",
+    "scan.noItems": "לא זוהו שורות פריטים — הוסיפו אותן ידנית למטה.",
+    "scan.addItem": "הוספת פריט",
+    "scan.ledgerCategory": "קטגוריה בלדג'ר",
+    "scan.logPre": "רישום",
+    "scan.logPost": "ללדג'ר",
+    "scan.unnamedItem": "פריט ללא שם",
+
+    "scan.loggedTitle": "נרשם ללדג'ר",
+    "scan.loggedAt": "ב־{merchant}",
+    "scan.itemsOne": "פריט אחד",
+    "scan.itemsMany": "{n} פריטים",
+    "scan.mockNote": "החילוץ בוצע בראייה מדומה (לא הוגדר מפתח API).",
+    "scan.viewLedger": "צפייה בלדג'ר",
+    "scan.scanAnother": "סריקה נוספת",
+  },
+};

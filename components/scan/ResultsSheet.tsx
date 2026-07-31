@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { History, Plus, ScanLine, Sparkle, Store, X } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP, CategoryId } from "@/lib/types";
 import { fmtMoney } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
 export interface EditableRow {
   id: string;
@@ -52,6 +53,7 @@ export default function ResultsSheet({
   mode,
   onLog,
 }: ResultsSheetProps) {
+  const { t } = useT();
   const total = rowTotal(rows);
   const matchedCount = rows.filter((r) => r.matched).length;
 
@@ -67,24 +69,26 @@ export default function ResultsSheet({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-faint">
             <ScanLine size={13} />
-            Extracted receipt
+            {t("scan.extracted")}
           </p>
           <div className="flex items-center gap-1.5">
             {mode === "mock" ? (
               <span className="chip bg-surface-2 text-ink-faint">
                 <Sparkle size={11} />
-                Mock vision
+                {t("scan.mockChip")}
               </span>
             ) : mode === "live" ? (
               <span className="chip bg-accent-soft text-accent">
                 <Sparkle size={11} />
-                Claude Vision
+                {t("scan.liveChip")}
               </span>
             ) : null}
             {matchedCount > 0 && (
               <span className="chip bg-surface-2 text-ink-dim">
                 <History size={11} />
-                {matchedCount} history match{matchedCount === 1 ? "" : "es"}
+                {matchedCount === 1
+                  ? t("scan.matchOne")
+                  : t("scan.matchMany", { n: matchedCount })}
               </span>
             )}
           </div>
@@ -94,8 +98,8 @@ export default function ResultsSheet({
           <input
             value={merchant}
             onChange={(e) => onMerchantChange(e.target.value)}
-            placeholder="Merchant name"
-            aria-label="Merchant"
+            placeholder={t("scan.merchantPlaceholder")}
+            aria-label={t("scan.merchant")}
             className="input !bg-surface-2 text-sm font-semibold"
           />
         </div>
@@ -119,11 +123,14 @@ export default function ResultsSheet({
                   <input
                     value={row.name}
                     onChange={(e) => onRowChange(row.id, { name: e.target.value })}
-                    placeholder="Item name"
-                    aria-label="Item name"
+                    placeholder={t("scan.itemName")}
+                    aria-label={t("scan.itemName")}
                     className="min-w-0 flex-1 rounded-lg bg-transparent px-2 py-1.5 text-sm text-ink outline-none ring-1 ring-transparent transition-all placeholder:text-ink-faint hover:bg-surface-2 focus:bg-surface-2 focus:ring-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
                   />
-                  <div className="relative shrink-0">
+                  {/* The price widget is deliberately LTR in both languages:
+                      the input is dir="ltr", so the $ prefix and padding stay
+                      physical (left) to match. */}
+                  <div className="relative shrink-0" dir="ltr">
                     <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-ink-faint">
                       $
                     </span>
@@ -135,28 +142,32 @@ export default function ResultsSheet({
                         })
                       }
                       inputMode="decimal"
+                      dir="ltr"
                       placeholder="0.00"
-                      aria-label="Item price"
+                      aria-label={t("scan.itemPrice")}
                       className="tabular w-[84px] rounded-lg bg-surface-2 py-1.5 pl-6 pr-2 text-right text-sm text-ink outline-none ring-1 ring-transparent transition-all focus:bg-surface-3 focus:ring-[color-mix(in_srgb,var(--accent)_60%,transparent)]"
                     />
                   </div>
                   <button
                     onClick={() => onRowRemove(row.id)}
-                    aria-label={`Remove ${row.name || "item"}`}
+                    aria-label={t("scan.removeItem", {
+                      name: row.name || t("scan.itemFallback"),
+                    })}
                     className="shrink-0 rounded-lg p-1.5 text-ink-faint transition-colors hover:bg-surface-2 hover:text-negative"
                   >
                     <X size={14} />
                   </button>
                 </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-1.5 pl-2">
+                <div className="mt-1.5 flex flex-wrap items-center gap-1.5 ps-2">
                   {row.matched && row.historicalPrice != null ? (
                     <span className="chip bg-accent-soft text-accent">
                       <History size={11} />
-                      History match: {fmtMoney(row.historicalPrice)}
+                      {t("scan.historyMatch")}{" "}
+                      <span dir="ltr">{fmtMoney(row.historicalPrice)}</span>
                     </span>
                   ) : (
                     <span className="chip bg-surface-2 text-ink-faint">
-                      New item — no purchase history
+                      {t("scan.newItem")}
                     </span>
                   )}
                   <span
@@ -167,7 +178,7 @@ export default function ResultsSheet({
                     }}
                   >
                     {CATEGORY_MAP[row.suggestedCategory].emoji}{" "}
-                    {CATEGORY_MAP[row.suggestedCategory].label}
+                    {t(`cat.${row.suggestedCategory}.short`)}
                   </span>
                 </div>
               </div>
@@ -177,7 +188,7 @@ export default function ResultsSheet({
 
         {rows.length === 0 && (
           <p className="px-5 py-8 text-center text-sm text-ink-faint">
-            No line items detected — add them manually below.
+            {t("scan.noItems")}
           </p>
         )}
 
@@ -187,17 +198,18 @@ export default function ResultsSheet({
           className="flex w-full items-center gap-2 px-4 py-3 text-sm text-ink-faint transition-colors hover:bg-surface-2 hover:text-ink sm:px-5"
         >
           <Plus size={15} />
-          Add item
+          {t("scan.addItem")}
         </button>
       </div>
 
       {/* Total */}
       <div className="flex items-center justify-between border-t border-line px-4 py-3.5 sm:px-5">
-        <p className="text-sm font-medium text-ink-dim">Total</p>
+        <p className="text-sm font-medium text-ink-dim">{t("common.total")}</p>
         <motion.p
           key={total.toFixed(2)}
           initial={{ opacity: 0.4, y: 2 }}
           animate={{ opacity: 1, y: 0 }}
+          dir="ltr"
           className="tabular text-lg font-bold text-ink"
         >
           {fmtMoney(total)}
@@ -207,7 +219,7 @@ export default function ResultsSheet({
       {/* Category + log */}
       <div className="space-y-3 border-t border-line p-4 sm:p-5">
         <p className="text-xs font-semibold uppercase tracking-wider text-ink-faint">
-          Ledger category
+          {t("scan.ledgerCategory")}
         </p>
         <div className="flex flex-wrap gap-1.5">
           {CATEGORIES.map((c) => {
@@ -232,7 +244,7 @@ export default function ResultsSheet({
                     : undefined
                 }
               >
-                {c.emoji} {c.label}
+                {c.emoji} {t(`cat.${c.id}.short`)}
               </button>
             );
           })}
@@ -242,7 +254,11 @@ export default function ResultsSheet({
           disabled={total <= 0 || !merchant.trim()}
           className="btn-primary w-full !py-3"
         >
-          Log {fmtMoney(total)} to ledger
+          {t("scan.logPre")}
+          <span dir="ltr" className="tabular">
+            {fmtMoney(total)}
+          </span>
+          {t("scan.logPost")}
         </button>
       </div>
     </motion.div>

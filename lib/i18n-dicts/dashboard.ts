@@ -1,4 +1,114 @@
 import type { Dict } from "../i18n";
 
-// Filled by the dashboard translation pass.
-export const dashboardDict: Dict = { en: {}, he: {} };
+export const dashboardDict: Dict = {
+  en: {
+    "dashboard.greeting.night": "Good night",
+    "dashboard.greeting.morning": "Good morning",
+    "dashboard.greeting.afternoon": "Good afternoon",
+    "dashboard.greeting.evening": "Good evening",
+    "dashboard.spent.pre": "Family spent",
+    "dashboard.spent.of": "of",
+    "dashboard.spent.post": "this month",
+
+    "dashboard.runway.title": "Predictive runway",
+    "dashboard.runway.confidence.high": "high confidence",
+    "dashboard.runway.confidence.medium": "medium confidence",
+    "dashboard.runway.confidence.low": "low confidence",
+    "dashboard.runway.projected": "Projected month-end",
+    "dashboard.runway.budget": "Budget",
+    "dashboard.runway.dailyBurn": "Daily burn",
+    "dashboard.runway.perDay": "/day",
+    "dashboard.runway.monthProgress": "Month progress",
+    "dashboard.runway.ofDays": "/{n} days",
+    "dashboard.runway.chart.day": "Day {n}",
+    "dashboard.runway.chart.projected": "projected",
+    "dashboard.runway.chart.spent": "spent",
+    "dashboard.runway.chart.budgetLine": "budget",
+    "dashboard.runway.onTrack.pre": "On track —",
+    "dashboard.runway.onTrack.post": "headroom projected at month end.",
+    "dashboard.runway.over.pre": "On this trajectory you'll be",
+    "dashboard.runway.over.post": "over budget",
+    "dashboard.runway.over.byDay": "by day {n}",
+
+    "dashboard.pulse.ofCap.pre": "of",
+    "dashboard.pulse.ofCap.post": "cap",
+    "dashboard.pulse.noCap": "no cap set",
+    "dashboard.pulse.over.pre": "",
+    "dashboard.pulse.over.post": "over",
+
+    "dashboard.tips.title": "Micro-savings",
+    "dashboard.tips.ai": "AI-detected",
+    "dashboard.tips.save.pre": "save ~",
+    "dashboard.tips.save.post": "/wk",
+    "dashboard.tips.dismiss": "Dismiss tip",
+    "dashboard.tips.empty":
+      "AI found no savings opportunities this week. Keep it up.",
+
+    "dashboard.anomaly.one": "1 anomaly in the last 14 days",
+    "dashboard.anomaly.many": "{n} anomalies in the last 14 days",
+    "dashboard.anomaly.above": "— {pct}% above its usual",
+    "dashboard.anomaly.micro": "— unrecognized micro-charge",
+    "dashboard.anomaly.review": "Review in Admin",
+
+    "dashboard.activity.title": "Recent activity",
+    "dashboard.activity.view": "View ledger",
+    "dashboard.activity.empty":
+      "No transactions yet — add one from the Ledger or Scan a receipt.",
+    "dashboard.activity.unknown": "Unknown",
+  },
+  he: {
+    "dashboard.greeting.night": "לילה טוב",
+    "dashboard.greeting.morning": "בוקר טוב",
+    "dashboard.greeting.afternoon": "צהריים טובים",
+    "dashboard.greeting.evening": "ערב טוב",
+    "dashboard.spent.pre": "המשפחה הוציאה",
+    "dashboard.spent.of": "מתוך",
+    "dashboard.spent.post": "החודש",
+
+    "dashboard.runway.title": "מסלול הוצאות חזוי",
+    "dashboard.runway.confidence.high": "ודאות גבוהה",
+    "dashboard.runway.confidence.medium": "ודאות בינונית",
+    "dashboard.runway.confidence.low": "ודאות נמוכה",
+    "dashboard.runway.projected": "צפי לסוף החודש",
+    "dashboard.runway.budget": "תקציב",
+    "dashboard.runway.dailyBurn": "קצב הוצאה יומי",
+    "dashboard.runway.perDay": " ליום",
+    "dashboard.runway.monthProgress": "התקדמות החודש",
+    "dashboard.runway.ofDays": " מתוך {n} ימים",
+    "dashboard.runway.chart.day": "יום {n}",
+    "dashboard.runway.chart.projected": "צפוי",
+    "dashboard.runway.chart.spent": "בפועל",
+    "dashboard.runway.chart.budgetLine": "תקציב",
+    "dashboard.runway.onTrack.pre": "במסלול תקין — צפויה יתרה של",
+    "dashboard.runway.onTrack.post": "בסוף החודש.",
+    "dashboard.runway.over.pre": "בקצב הנוכחי תהיו",
+    "dashboard.runway.over.post": "מעבר לתקציב",
+    "dashboard.runway.over.byDay": "עד יום {n}",
+
+    "dashboard.pulse.ofCap.pre": "מתוך תקרה של",
+    "dashboard.pulse.ofCap.post": "",
+    "dashboard.pulse.noCap": "לא הוגדרה תקרה",
+    "dashboard.pulse.over.pre": "חריגה של",
+    "dashboard.pulse.over.post": "",
+
+    "dashboard.tips.title": "חסכונות קטנים",
+    "dashboard.tips.ai": "זוהו על ידי AI",
+    "dashboard.tips.save.pre": "חיסכון של כ-",
+    "dashboard.tips.save.post": " בשבוע",
+    "dashboard.tips.dismiss": "הסרת ההמלצה",
+    "dashboard.tips.empty":
+      "ה-AI לא מצא הזדמנויות חיסכון השבוע. המשיכו כך.",
+
+    "dashboard.anomaly.one": "חריגה אחת ב-14 הימים האחרונים",
+    "dashboard.anomaly.many": "{n} חריגות ב-14 הימים האחרונים",
+    "dashboard.anomaly.above": "— {pct}% מעל הרגיל של",
+    "dashboard.anomaly.micro": "— חיוב זעיר לא מזוהה",
+    "dashboard.anomaly.review": "לבדיקה במסך הניהול",
+
+    "dashboard.activity.title": "פעילות אחרונה",
+    "dashboard.activity.view": "לצפייה בלדג'ר",
+    "dashboard.activity.empty":
+      "עדיין אין תנועות — הוסיפו תנועה בלדג'ר או סרקו קבלה.",
+    "dashboard.activity.unknown": "לא ידוע",
+  },
+};

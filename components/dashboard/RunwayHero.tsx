@@ -14,6 +14,7 @@ import { AlertTriangle, CheckCircle2, Flame, CalendarDays, TrendingUp } from "lu
 import { useFam } from "@/lib/store";
 import { computeRunway, inMonth, monthWindow } from "@/lib/insights";
 import { fmtMoney } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
 const DAY = 86_400_000;
 
@@ -32,6 +33,7 @@ function ChartTooltip({
   payload?: { value: number | null; dataKey: string }[];
   label?: number;
 }) {
+  const { t } = useT();
   if (!active || !payload?.length) return null;
   const projected = payload.find((p) => p.dataKey === "projected")?.value;
   const actual = payload.find((p) => p.dataKey === "actual")?.value;
@@ -39,11 +41,15 @@ function ChartTooltip({
   if (value == null) return null;
   return (
     <div className="rounded-xl bg-surface-3 px-3 py-2 text-xs shadow-pop">
-      <p className="text-ink-faint">Day {label}</p>
+      <p className="text-ink-faint">
+        {t("dashboard.runway.chart.day", { n: label ?? 0 })}
+      </p>
       <p className="tabular mt-0.5 font-semibold text-ink">
-        {fmtMoney(value)}{" "}
+        <span dir="ltr">{fmtMoney(value)}</span>{" "}
         <span className="font-normal text-ink-dim">
-          {actual == null ? "projected" : "spent"}
+          {actual == null
+            ? t("dashboard.runway.chart.projected")
+            : t("dashboard.runway.chart.spent")}
         </span>
       </p>
     </div>
@@ -51,6 +57,7 @@ function ChartTooltip({
 }
 
 export default function RunwayHero() {
+  const { t, lang } = useT();
   const members = useFam((s) => s.members);
   const transactions = useFam((s) => s.transactions);
   const alerts = useFam((s) => s.alerts);
@@ -108,7 +115,9 @@ export default function RunwayHero() {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <TrendingUp size={16} className="text-accent" />
-            <h2 className="text-sm font-semibold">Predictive runway</h2>
+            <h2 className="text-sm font-semibold">
+              {t("dashboard.runway.title")}
+            </h2>
           </div>
           <span className="chip bg-surface-2 capitalize text-ink-faint">
             <span
@@ -122,7 +131,7 @@ export default function RunwayHero() {
                       : "var(--ink-faint)",
               }}
             />
-            {runway.confidence} confidence
+            {t(`dashboard.runway.confidence.${runway.confidence}`)}
           </span>
         </div>
 
@@ -130,7 +139,7 @@ export default function RunwayHero() {
         <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4">
           <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-wide text-ink-faint">
-              Projected month-end
+              {t("dashboard.runway.projected")}
             </p>
             <p
               className={`tabular mt-1 truncate text-xl font-semibold md:text-2xl ${
@@ -142,7 +151,7 @@ export default function RunwayHero() {
           </div>
           <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-wide text-ink-faint">
-              Budget
+              {t("dashboard.runway.budget")}
             </p>
             <p className="tabular mt-1 truncate text-xl font-semibold text-ink-dim md:text-2xl">
               {fmtMoney(budget, { compact: true })}

@@ -2,14 +2,21 @@
 
 import { motion } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
-export const SCAN_STEPS = ["Uploading", "AI reading", "Matching history"] as const;
+/** i18n keys for the three scan phases, in order. */
+export const SCAN_STEPS = [
+  "scan.step.upload",
+  "scan.step.reading",
+  "scan.step.matching",
+] as const;
 
 interface ScanProgressProps {
   step: number; // index into SCAN_STEPS of the currently active step
 }
 
 export default function ScanProgress({ step }: ScanProgressProps) {
+  const { t } = useT();
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -18,11 +25,11 @@ export default function ScanProgress({ step }: ScanProgressProps) {
     >
       {/* Step indicator */}
       <div className="flex items-center justify-between gap-2">
-        {SCAN_STEPS.map((label, i) => {
+        {SCAN_STEPS.map((key, i) => {
           const done = i < step;
           const active = i === step;
           return (
-            <div key={label} className="flex min-w-0 flex-1 items-center gap-2">
+            <div key={key} className="flex min-w-0 flex-1 items-center gap-2">
               <div
                 className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-colors duration-300 ${
                   done
@@ -45,7 +52,7 @@ export default function ScanProgress({ step }: ScanProgressProps) {
                   active ? "text-ink" : done ? "text-ink-dim" : "text-ink-faint"
                 }`}
               >
-                {label}
+                {t(key)}
               </span>
               {i < SCAN_STEPS.length - 1 && (
                 <div

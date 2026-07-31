@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, ImageUp, RefreshCcw, Sparkles, X } from "lucide-react";
+import { useT } from "@/lib/i18n";
 
 interface CaptureZoneProps {
   previewUrl: string | null;
@@ -21,6 +22,7 @@ export default function CaptureZone({
   onClear,
   onAnalyze,
 }: CaptureZoneProps) {
+  const { t } = useT();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
 
@@ -37,7 +39,7 @@ export default function CaptureZone({
         accept="image/*"
         capture="environment"
         className="hidden"
-        aria-label="Capture receipt photo"
+        aria-label={t("scan.captureAria")}
         onChange={(e) => {
           handleFiles(e.target.files);
           e.target.value = "";
@@ -69,16 +71,15 @@ export default function CaptureZone({
           </div>
           <div className="text-center">
             <p className="text-sm font-semibold text-ink">
-              Snap a receipt or product
+              {t("scan.snapTitle")}
             </p>
             <p className="mt-1 max-w-xs text-xs leading-relaxed text-ink-dim">
-              Claude Vision reads the line items, matches them against your
-              family&apos;s purchase history, and preps the ledger entry.
+              {t("scan.snapHint")}
             </p>
           </div>
           <span className="chip bg-surface-2 text-ink-faint">
             <ImageUp size={12} />
-            Tap to capture · drop an image
+            {t("scan.tapCapture")}
           </span>
         </button>
       ) : (
@@ -91,14 +92,14 @@ export default function CaptureZone({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewUrl}
-              alt="Selected receipt"
+              alt={t("scan.previewAlt")}
               className="mx-auto max-h-[320px] w-full object-contain"
             />
             <button
               onClick={onClear}
               disabled={busy}
-              aria-label="Remove image"
-              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--surface-0)_80%,transparent)] text-ink-dim backdrop-blur transition-colors hover:text-ink disabled:opacity-40"
+              aria-label={t("scan.removeImage")}
+              className="absolute end-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--surface-0)_80%,transparent)] text-ink-dim backdrop-blur transition-colors hover:text-ink disabled:opacity-40"
             >
               <X size={15} />
             </button>
@@ -114,11 +115,11 @@ export default function CaptureZone({
                 className="btn-ghost !px-3 !py-2 text-xs"
               >
                 <RefreshCcw size={13} />
-                Retake
+                {t("scan.retake")}
               </button>
               <button onClick={onAnalyze} disabled={busy} className="btn-primary">
                 <Sparkles size={15} />
-                Analyze with AI
+                {t("scan.analyze")}
               </button>
             </div>
           </div>

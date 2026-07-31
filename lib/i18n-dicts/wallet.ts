@@ -1,4 +1,151 @@
 import type { Dict } from "../i18n";
 
-// Filled by the wallet translation pass.
-export const walletDict: Dict = { en: {}, he: {} };
+export const walletDict: Dict = {
+  en: {
+    "wallet.title": "Wallet",
+    "wallet.subtitle":
+      "Tokenized cards and in-app payments that log straight to the family ledger.",
+
+    "wallet.savedCards": "Saved cards",
+    "wallet.savedCards.all": "All family cards, tokenized in the vault",
+    "wallet.savedCards.yours": "Your tokenized cards",
+    "wallet.addCard": "Add card",
+    "wallet.addFirst": "Add your first card",
+    "wallet.addFirst.note": "Tokenized — safe for the whole family",
+    "wallet.ownerCard": "{name}'s card",
+    "wallet.unknown": "Unknown",
+
+    "wallet.removeCardAria": "Remove card",
+    "wallet.removeConfirm": "Remove this card?",
+    "wallet.removeDetached": "will be detached.",
+    "wallet.remove": "Remove",
+    "wallet.keep": "Keep",
+
+    "wallet.addModal.title": "Add a card",
+    "wallet.addModal.security":
+      "Tokenized locally — the number never touches the ledger",
+    "wallet.cardNumber": "Card number",
+    "wallet.expiry": "Expiry",
+    "wallet.cvc": "CVC",
+    "wallet.saveCard": "Save card",
+    "wallet.tokenizing": "Tokenizing…",
+    "wallet.useTestCard": "Use test card",
+
+    "wallet.err.brand": "Enter a Visa, Mastercard or Amex number",
+    "wallet.err.incomplete": "Card number is incomplete",
+    "wallet.err.luhn": "Invalid card number (failed check digit)",
+    "wallet.err.expFormat": "Use MM/YY",
+    "wallet.err.expMonth": "Invalid month",
+    "wallet.err.expired": "Card is expired",
+    "wallet.err.cvc": "{n} digits",
+    "wallet.err.tokenize": "Something went wrong tokenizing the card.",
+    "wallet.err.paymentFailed": "Payment failed — please try again.",
+
+    "wallet.stripeErr.invalid_number": "Invalid card number — check the digits.",
+    "wallet.stripeErr.incomplete_number": "Card number is incomplete.",
+    "wallet.stripeErr.invalid_expiry": "Invalid expiration month.",
+    "wallet.stripeErr.expired_card": "This card has expired.",
+    "wallet.stripeErr.invalid_cvc": "Invalid CVC.",
+    "wallet.stripeErr.card_declined":
+      "Your card was declined by the issuing bank.",
+
+    "wallet.pay.title": "Make a payment",
+    "wallet.pay.subtitle": "Charged in-app, logged to the family ledger instantly",
+    "wallet.pay.noCards": "Add a card above to start paying in-app.",
+    "wallet.pay.with": "Pay with",
+    "wallet.pay.amount": "Amount",
+    "wallet.pay.merchant": "Merchant / label",
+    "wallet.pay.merchantPh": "e.g. SuperMart Groceries",
+    "wallet.pay.category": "Category",
+    "wallet.pay.cta": "Pay",
+    "wallet.pay.tip": "Tip: an amount of exactly $6.66 simulates a decline",
+    "wallet.stage.tokenizing": "Tokenizing",
+    "wallet.stage.authorizing": "Authorizing",
+    "wallet.stage.captured": "Captured",
+    "wallet.pay.chargedTo": "charged to",
+    "wallet.pay.toast": "Logged to family ledger",
+    "wallet.pay.declined": "Payment declined",
+    "wallet.pay.declinedNote": "Nothing was charged and nothing was logged.",
+    "wallet.pay.retry": "Retry payment",
+    "wallet.pay.edit": "Edit details",
+
+    "wallet.activity.title": "Payment activity",
+    "wallet.activity.via": "via wallet",
+    "wallet.activity.empty":
+      "No in-app payments yet. Your first wallet payment will appear here the moment it captures.",
+    "wallet.activity.viewAll": "View all {n} payments in the ledger",
+  },
+  he: {
+    "wallet.title": "ארנק",
+    "wallet.subtitle":
+      "כרטיסים מטוקנים ותשלומים בתוך האפליקציה שנרשמים ישירות בלדג'ר המשפחתי.",
+
+    "wallet.savedCards": "כרטיסים שמורים",
+    "wallet.savedCards.all": "כל כרטיסי המשפחה, מטוקנים בכספת",
+    "wallet.savedCards.yours": "הכרטיסים המטוקנים שלך",
+    "wallet.addCard": "הוספת כרטיס",
+    "wallet.addFirst": "הוסיפו את הכרטיס הראשון שלכם",
+    "wallet.addFirst.note": "מטוקנן — בטוח לכל המשפחה",
+    "wallet.ownerCard": "הכרטיס של {name}",
+    "wallet.unknown": "לא ידוע",
+
+    "wallet.removeCardAria": "הסרת כרטיס",
+    "wallet.removeConfirm": "להסיר את הכרטיס?",
+    "wallet.removeDetached": "ינותק מהארנק.",
+    "wallet.remove": "הסרה",
+    "wallet.keep": "ביטול",
+
+    "wallet.addModal.title": "הוספת כרטיס",
+    "wallet.addModal.security":
+      "הטוקניזציה מתבצעת מקומית — המספר לעולם לא מגיע ללדג'ר",
+    "wallet.cardNumber": "מספר כרטיס",
+    "wallet.expiry": "תוקף",
+    "wallet.cvc": "CVC",
+    "wallet.saveCard": "שמירת כרטיס",
+    "wallet.tokenizing": "מבצע טוקניזציה…",
+    "wallet.useTestCard": "שימוש בכרטיס הבדיקה",
+
+    "wallet.err.brand": "הזינו מספר Visa, Mastercard או Amex",
+    "wallet.err.incomplete": "מספר הכרטיס אינו שלם",
+    "wallet.err.luhn": "מספר כרטיס שגוי (ספרת ביקורת לא תקינה)",
+    "wallet.err.expFormat": "יש להזין בפורמט MM/YY",
+    "wallet.err.expMonth": "חודש לא תקין",
+    "wallet.err.expired": "תוקף הכרטיס פג",
+    "wallet.err.cvc": "{n} ספרות",
+    "wallet.err.tokenize": "משהו השתבש בטוקניזציה של הכרטיס.",
+    "wallet.err.paymentFailed": "התשלום נכשל — נסו שוב.",
+
+    "wallet.stripeErr.invalid_number": "מספר הכרטיס שגוי — בדקו את הספרות.",
+    "wallet.stripeErr.incomplete_number": "מספר הכרטיס אינו שלם.",
+    "wallet.stripeErr.invalid_expiry": "חודש תפוגה לא תקין.",
+    "wallet.stripeErr.expired_card": "תוקף הכרטיס פג.",
+    "wallet.stripeErr.invalid_cvc": "קוד CVC לא תקין.",
+    "wallet.stripeErr.card_declined": "הכרטיס נדחה על ידי הבנק המנפיק.",
+
+    "wallet.pay.title": "ביצוע תשלום",
+    "wallet.pay.subtitle": "החיוב מתבצע באפליקציה ונרשם מיידית בלדג'ר המשפחתי",
+    "wallet.pay.noCards": "הוסיפו כרטיס למעלה כדי להתחיל לשלם בתוך האפליקציה.",
+    "wallet.pay.with": "לשלם עם",
+    "wallet.pay.amount": "סכום",
+    "wallet.pay.merchant": "בית עסק / תיאור",
+    "wallet.pay.merchantPh": "לדוגמה: קניות בסופרמרקט",
+    "wallet.pay.category": "קטגוריה",
+    "wallet.pay.cta": "לשלם",
+    "wallet.pay.tip": "טיפ: סכום של בדיוק $6.66 מדמה דחיית תשלום",
+    "wallet.stage.tokenizing": "טוקניזציה",
+    "wallet.stage.authorizing": "אישור",
+    "wallet.stage.captured": "נגבה",
+    "wallet.pay.chargedTo": "חויב בכרטיס",
+    "wallet.pay.toast": "נרשם בלדג'ר המשפחתי",
+    "wallet.pay.declined": "התשלום נדחה",
+    "wallet.pay.declinedNote": "לא בוצע חיוב ודבר לא נרשם.",
+    "wallet.pay.retry": "ניסיון חוזר",
+    "wallet.pay.edit": "עריכת פרטים",
+
+    "wallet.activity.title": "פעילות תשלומים",
+    "wallet.activity.via": "דרך הארנק",
+    "wallet.activity.empty":
+      "אין עדיין תשלומים מהאפליקציה. התשלום הראשון מהארנק יופיע כאן ברגע שייגבה.",
+    "wallet.activity.viewAll": "צפייה בכל {n} התשלומים בלדג'ר",
+  },
+};

@@ -4,15 +4,17 @@ import { motion } from "framer-motion";
 import { useFam, useCurrentMember } from "@/lib/store";
 import { inMonth, sum } from "@/lib/insights";
 import { fmtMoney } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
-function greetingFor(hour: number) {
-  if (hour < 5) return "Good night";
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+function greetingKey(hour: number) {
+  if (hour < 5) return "dashboard.greeting.night";
+  if (hour < 12) return "dashboard.greeting.morning";
+  if (hour < 18) return "dashboard.greeting.afternoon";
+  return "dashboard.greeting.evening";
 }
 
 export default function GreetingHeader() {
+  const { t, lang } = useT();
   const me = useCurrentMember();
   const transactions = useFam((s) => s.transactions);
   const budget = useFam((s) => s.settings.monthlyBudget);
@@ -22,7 +24,7 @@ export default function GreetingHeader() {
   const pct = budget > 0 ? Math.min(100, (spent / budget) * 100) : 0;
   const over = spent > budget;
 
-  const today = now.toLocaleDateString("en-US", {
+  const today = now.toLocaleDateString(lang === "he" ? "he-IL" : "en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
@@ -32,22 +34,22 @@ export default function GreetingHeader() {
     <header className="min-w-0">
       <p className="text-[13px] text-ink-faint">{today}</p>
       <h1 className="mt-0.5 truncate text-2xl font-semibold tracking-tight md:text-3xl">
-        {greetingFor(now.getHours())}
+        {t(greetingKey(now.getHours()))}
         {me ? `, ${me.name}` : ""}
       </h1>
 
       <div className="mt-4 max-w-xl">
         <div className="flex items-baseline justify-between gap-3">
           <p className="text-sm text-ink-dim">
-            Family spent{" "}
-            <span className="tabular font-semibold text-ink">
+            {t("dashboard.spent.pre")}{" "}
+            <span dir="ltr" className="tabular font-semibold text-ink">
               {fmtMoney(spent)}
             </span>{" "}
-            of{" "}
-            <span className="tabular font-medium text-ink-dim">
+            {t("dashboard.spent.of")}{" "}
+            <span dir="ltr" className="tabular font-medium text-ink-dim">
               {fmtMoney(budget)}
             </span>{" "}
-            this month
+            {t("dashboard.spent.post")}
           </p>
           <span
             className={`tabular shrink-0 text-xs font-semibold ${

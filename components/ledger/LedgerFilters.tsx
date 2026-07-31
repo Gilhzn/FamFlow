@@ -3,6 +3,7 @@
 import { Search, X } from "lucide-react";
 import { CATEGORIES, CategoryId, Member } from "@/lib/types";
 import { fmtMoney } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
 interface Props {
   members: Member[];
@@ -31,6 +32,7 @@ export default function LedgerFilters({
   hasFilters,
   clearFilters,
 }: Props) {
+  const { t } = useT();
   return (
     <div className="space-y-2.5">
       <div className="flex flex-wrap items-center gap-1.5">
@@ -89,7 +91,7 @@ export default function LedgerFilters({
               }
             >
               <span aria-hidden>{c.emoji}</span>
-              {c.label.split(" ")[0]}
+              {t(`cat.${c.id}.short`)}
             </button>
           );
         })}
@@ -98,20 +100,20 @@ export default function LedgerFilters({
       <div className="relative">
         <Search
           size={15}
-          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-faint"
+          className="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-ink-faint"
         />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search label or note…"
-          aria-label="Search transactions"
-          className="input pl-9 pr-9"
+          placeholder={t("ledger.searchPlaceholder")}
+          aria-label={t("ledger.searchAria")}
+          className="input ps-9 pe-9"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
-            aria-label="Clear search"
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-ink-faint transition-colors hover:text-ink"
+            aria-label={t("ledger.clearSearch")}
+            className="absolute end-2.5 top-1/2 -translate-y-1/2 rounded-md p-1 text-ink-faint transition-colors hover:text-ink"
           >
             <X size={14} />
           </button>
@@ -120,8 +122,11 @@ export default function LedgerFilters({
 
       <div className="flex items-center justify-between px-0.5 text-xs text-ink-faint">
         <span>
-          {count} transaction{count === 1 ? "" : "s"} ·{" "}
-          <span className="tabular font-medium text-ink-dim">
+          {count === 1
+            ? t("ledger.resultsOne")
+            : t("ledger.results", { n: count })}{" "}
+          ·{" "}
+          <span dir="ltr" className="tabular font-medium text-ink-dim">
             {fmtMoney(total)}
           </span>
         </span>
@@ -131,7 +136,7 @@ export default function LedgerFilters({
             className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-medium text-accent transition-colors hover:bg-accent-soft"
           >
             <X size={12} />
-            Clear filters
+            {t("ledger.clearFilters")}
           </button>
         )}
       </div>

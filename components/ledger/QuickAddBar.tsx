@@ -4,11 +4,13 @@ import { useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { CATEGORIES, CategoryId } from "@/lib/types";
 import { useFam, useCurrentMember } from "@/lib/store";
+import { useT } from "@/lib/i18n";
 
 /** Segmented quick-add bar — instant optimistic manual entry. */
 export default function QuickAddBar() {
   const addTransaction = useFam((s) => s.addTransaction);
   const me = useCurrentMember();
+  const { t } = useT();
   const [amount, setAmount] = useState("");
   const [label, setLabel] = useState("");
   const [cat, setCat] = useState<CategoryId>("food");
@@ -41,7 +43,7 @@ export default function QuickAddBar() {
       <div className="flex flex-col gap-2.5">
         <div className="flex gap-2.5">
           <div className="relative w-28 shrink-0">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-faint">
+            <span className="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-faint">
               $
             </span>
             <input
@@ -53,17 +55,17 @@ export default function QuickAddBar() {
               }}
               onKeyDown={onKeyDown}
               inputMode="decimal"
-              placeholder="0.00"
-              aria-label="Amount"
-              className="input tabular pl-7"
+              placeholder={t("ledger.amountPlaceholder")}
+              aria-label={t("ledger.amount")}
+              className="input tabular ps-7"
             />
           </div>
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="What was it? e.g. Groceries at Wholemart"
-            aria-label="Label"
+            placeholder={t("ledger.labelPlaceholder")}
+            aria-label={t("ledger.labelPlaceholder")}
             className="input min-w-0 flex-1"
           />
           <button
@@ -72,14 +74,14 @@ export default function QuickAddBar() {
             className="btn-primary hidden shrink-0 sm:inline-flex"
           >
             <Plus size={16} />
-            Add
+            {t("common.add")}
           </button>
         </div>
 
         <div className="flex items-center gap-2.5">
           <div
             role="group"
-            aria-label="Category"
+            aria-label={t("ledger.category")}
             className="grid flex-1 grid-cols-4 gap-1 rounded-xl bg-surface-2 p-1"
           >
             {CATEGORIES.map((c) => {
@@ -104,7 +106,7 @@ export default function QuickAddBar() {
                 >
                   <span aria-hidden>{c.emoji}</span>
                   <span className="hidden truncate min-[420px]:inline">
-                    {c.label.split(" ")[0]}
+                    {t(`cat.${c.id}.short`)}
                   </span>
                 </button>
               );
@@ -113,7 +115,7 @@ export default function QuickAddBar() {
           <button
             onClick={submit}
             disabled={!valid}
-            aria-label="Add transaction"
+            aria-label={t("ledger.addTx")}
             className="btn-primary shrink-0 px-3 sm:hidden"
           >
             <Plus size={18} />

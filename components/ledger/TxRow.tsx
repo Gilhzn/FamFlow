@@ -11,17 +11,12 @@ import {
 } from "lucide-react";
 import { CATEGORY_MAP, Member, Transaction, TxSource } from "@/lib/types";
 import { fmtMoney, fmtTime } from "@/lib/format";
+import { useT } from "@/lib/i18n";
 
 const SOURCE_ICON: Record<TxSource, typeof Pencil> = {
   manual: Pencil,
   scan: ScanLine,
   payment: CreditCard,
-};
-
-const SOURCE_LABEL: Record<TxSource, string> = {
-  manual: "Manual entry",
-  scan: "Scanned receipt",
-  payment: "Card payment",
 };
 
 export default function TxRow({
@@ -35,6 +30,7 @@ export default function TxRow({
   canDelete: boolean;
   onDelete: () => void;
 }) {
+  const { t, lang } = useT();
   const [expanded, setExpanded] = useState(false);
   const [touchRevealed, setTouchRevealed] = useState(false);
   const [armed, setArmed] = useState(false);
@@ -173,7 +169,7 @@ export default function TxRow({
                 color: cat.color,
               }}
             >
-              {cat.emoji} {cat.label.split(" ")[0]}
+              {cat.emoji} {t(`cat.${tx.category}.short`)}
             </span>
             {hasItems && (
               <ChevronDown
@@ -185,7 +181,7 @@ export default function TxRow({
             )}
           </div>
           <p className="mt-0.5 truncate text-xs text-ink-faint">
-            {fmtTime(tx.ts)}
+            {fmtTime(tx.ts, lang)}
             {tx.note ? ` · ${tx.note}` : ""}
           </p>
         </div>
@@ -193,9 +189,9 @@ export default function TxRow({
         <SourceIcon
           size={13}
           className="shrink-0 text-ink-faint"
-          aria-label={SOURCE_LABEL[tx.source]}
+          aria-label={t(`ledger.source.${tx.source}`)}
         />
-        <span className="tabular shrink-0 text-sm font-semibold">
+        <span dir="ltr" className="tabular shrink-0 text-sm font-semibold">
           {fmtMoney(tx.amount, { cents: true })}
         </span>
 
@@ -206,7 +202,7 @@ export default function TxRow({
               clearArm();
               setArmed(false);
             }}
-            aria-label={armed ? "Confirm delete" : "Delete transaction"}
+            aria-label={armed ? t("ledger.confirmDelete") : t("ledger.deleteTx")}
             className={`shrink-0 rounded-lg transition-all duration-150 focus-visible:pointer-events-auto focus-visible:opacity-100 ${
               armed
                 ? "pointer-events-auto flex items-center gap-1 bg-negative/15 px-2 py-1.5 text-[11px] font-semibold text-negative opacity-100"
@@ -218,7 +214,11 @@ export default function TxRow({
             }`}
           >
             <Trash2 size={armed ? 12 : 14} />
-            {armed && <span className="whitespace-nowrap">Delete?</span>}
+            {armed && (
+              <span className="whitespace-nowrap">
+                {t("ledger.deleteConfirm")}
+              </span>
+            )}
           </button>
         )}
       </div>
@@ -250,6 +250,11 @@ export default function TxRow({
                     {diff !== null && (
                       <span
                         className="chip shrink-0 px-1.5 py-0.5 text-[10px]"
+                        title={t("ledger.historyMatch", {
+                          price: fmtMoney(it.historicalPrice!, {
+                            cents: true,
+                          }),
+                        })}
                         style={{
                           background:
                             diff > 0
@@ -259,13 +264,13 @@ export default function TxRow({
                             diff > 0 ? "var(--negative)" : "var(--positive)",
                         }}
                       >
-                        <span className="tabular">
+                        <span dir="ltr" className="tabular">
                           {fmtMoney(diff, { sign: true })}
                         </span>
-                        vs usual
+                        {t("ledger.vsUsual")}
                       </span>
                     )}
-                    <span className="tabular shrink-0 font-medium">
+                    <span dir="ltr" className="tabular shrink-0 font-medium">
                       {fmtMoney(it.price, { cents: true })}
                     </span>
                   </div>
