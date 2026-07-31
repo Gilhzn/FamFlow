@@ -60,7 +60,7 @@ const core: Dict = {
     "login.subtitle.demo": "{family} — pick your profile to enter the shared ledger",
     "login.subtitle.real": "Welcome back — sign in to your family ledger",
     "login.enter": "Enter",
-    "login.capPerMonth": "· ${n}/mo cap",
+    "login.capPerMonth": "· {n}/mo cap",
     "login.adminFull": "Admin · full governance",
     "login.multiDevice":
       "Multi-device demo: open this app in a second tab or window — every entry syncs across the family in real time.",
@@ -93,6 +93,15 @@ const core: Dict = {
       "Accounts live in this browser and sync across its tabs — no data leaves your device.",
 
     "lang.toggle": "עברית",
+    "login.currency": "Currency",
+    "login.country": "Country",
+    "admin.country.label": "Shopping country",
+    "admin.country.hint":
+      "Product price searches compare offers from store chains in this country.",
+    "admin.currency.label": "Family currency",
+    "admin.currency.USD": "Dollar",
+    "admin.currency.ILS": "Shekel",
+    "admin.currency.EUR": "Euro",
     "theme.toggle": "Toggle theme",
     "theme.dark": "Dark",
     "theme.light": "Light",
@@ -142,7 +151,7 @@ const core: Dict = {
     "login.subtitle.demo": "{family} — בחרו פרופיל כדי להיכנס ללדג'ר המשותף",
     "login.subtitle.real": "ברוכים השבים — התחברו ללדג'ר המשפחתי",
     "login.enter": "כניסה",
-    "login.capPerMonth": "· תקרה ${n} לחודש",
+    "login.capPerMonth": "· תקרה {n} לחודש",
     "login.adminFull": "מנהל · שליטה מלאה",
     "login.multiDevice":
       "הדגמת ריבוי מכשירים: פתחו את האפליקציה בטאב או חלון נוסף — כל רישום מסתנכרן בין בני המשפחה בזמן אמת.",
@@ -175,6 +184,15 @@ const core: Dict = {
       "החשבונות נשמרים בדפדפן הזה ומסתנכרנים בין הטאבים שלו — שום מידע לא עוזב את המכשיר.",
 
     "lang.toggle": "English",
+    "login.currency": "מטבע",
+    "login.country": "מדינה",
+    "admin.country.label": "מדינת הקניות",
+    "admin.country.hint":
+      "חיפושי מחירים של מוצרים משווים הצעות מרשתות שפועלות במדינה הזו.",
+    "admin.currency.label": "מטבע המשפחה",
+    "admin.currency.USD": "דולר",
+    "admin.currency.ILS": "שקל",
+    "admin.currency.EUR": "יורו",
     "theme.toggle": "החלפת ערכת נושא",
     "theme.dark": "כהה",
     "theme.light": "בהיר",

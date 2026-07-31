@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Zap,
 } from "lucide-react";
-import { useFam, useCurrentMember } from "@/lib/store";
+import { useFam, useCurrentMember, useCurrencySymbol } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 import { CATEGORIES, CategoryId } from "@/lib/types";
 import { fmtMoney } from "@/lib/format";
@@ -133,6 +133,7 @@ export default function PayPanel() {
   const amountValid = Number.isFinite(amountNum) && amountNum > 0;
   const ready = !!me && !!selected && amountValid && label.trim().length > 0;
   const inFlight = phase === "tokenizing" || phase === "authorizing";
+  const sym = useCurrencySymbol();
 
   async function pay() {
     if (!ready || !me || !selected || inFlight) return;
@@ -240,7 +241,7 @@ export default function PayPanel() {
               {/* Money entry is a physical-LTR unit: $ sign, digits, padding. */}
               <div className="relative" dir="ltr">
                 <span className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-sm text-ink-faint">
-                  $
+                  {sym}
                 </span>
                 <input
                   className="input tabular !pl-7"

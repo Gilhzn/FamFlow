@@ -1,5 +1,6 @@
 import { PRODUCT_REGISTRY } from "./seed";
 import { CategoryId } from "./types";
+import { storesForCountry, DEFAULT_COUNTRY } from "./countries";
 
 /**
  * Product photo → price search ("Google Images"-style automation).
@@ -26,17 +27,6 @@ export interface ProductSearchResult {
   offers: ProductOffer[]; // sorted cheapest first
 }
 
-const STORES = [
-  "SuperMart",
-  "Amazon",
-  "Walmart",
-  "Shufersal Online",
-  "Rami Levy",
-  "eBay",
-  "Target",
-  "Victory",
-];
-
 const NOTES: ProductOffer["noteKey"][] = ["inStock", "delivery", "pickup", "sale"];
 
 function hashImage(b64: string): number {
@@ -60,9 +50,11 @@ function mulberry32(a: number) {
 }
 
 export async function mockProductSearch(
-  imageBase64: string
+  imageBase64: string,
+  country: string = DEFAULT_COUNTRY
 ): Promise<ProductSearchResult> {
   const rand = mulberry32(hashImage(imageBase64));
+  const STORES = storesForCountry(country);
 
   const product = PRODUCT_REGISTRY[Math.floor(rand() * PRODUCT_REGISTRY.length)];
 

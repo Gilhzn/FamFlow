@@ -1,13 +1,37 @@
+export type Currency = "USD" | "ILS" | "EUR";
+
+export const CURRENCY_SYMBOLS: Record<Currency, string> = {
+  USD: "$",
+  ILS: "₪",
+  EUR: "€",
+};
+
+export const CURRENCIES: Currency[] = ["USD", "ILS", "EUR"];
+
+// Family-level currency, mirrored from store settings (see lib/store.ts).
+// Components re-render through the store; this keeps fmtMoney signature-free.
+let activeCurrency: Currency = "USD";
+
+export function setActiveCurrency(c: string) {
+  activeCurrency = (c in CURRENCY_SYMBOLS ? c : "USD") as Currency;
+}
+
+export function currencySymbol(c?: string): string {
+  if (c && c in CURRENCY_SYMBOLS) return CURRENCY_SYMBOLS[c as Currency];
+  return CURRENCY_SYMBOLS[activeCurrency];
+}
+
 export function fmtMoney(
   n: number,
   opts: { compact?: boolean; sign?: boolean; cents?: boolean } = {}
 ) {
+  const sym = CURRENCY_SYMBOLS[activeCurrency];
   const abs = Math.abs(n);
   const sign = opts.sign && n > 0 ? "+" : n < 0 ? "−" : "";
   if (opts.compact && abs >= 10000) {
-    return `${sign}$${(abs / 1000).toFixed(1)}k`;
+    return `${sign}${sym}${(abs / 1000).toFixed(1)}k`;
   }
-  return `${sign}$${abs.toLocaleString("en-US", {
+  return `${sign}${sym}${abs.toLocaleString("en-US", {
     minimumFractionDigits: opts.cents || abs % 1 !== 0 ? 2 : 0,
     maximumFractionDigits: 2,
   })}`;

@@ -1,4 +1,5 @@
 import { PRODUCT_REGISTRY } from "./seed";
+import { storesForCountry, DEFAULT_COUNTRY } from "./countries";
 
 /**
  * Deterministic mock vision extraction — shared by the /api/vision route
@@ -39,7 +40,10 @@ function mulberry32(a: number) {
   };
 }
 
-export async function mockExtract(imageBase64: string): Promise<VisionPayload> {
+export async function mockExtract(
+  imageBase64: string,
+  country: string = DEFAULT_COUNTRY
+): Promise<VisionPayload> {
   const rand = mulberry32(hashImage(imageBase64));
   const count = 3 + Math.floor(rand() * 4); // 3–6 items
 
@@ -58,5 +62,7 @@ export async function mockExtract(imageBase64: string): Promise<VisionPayload> {
   // ~1.2s artificial latency so the scanning UX reads honestly.
   await new Promise((r) => setTimeout(r, 1200));
 
-  return { mode: "mock", merchant: "SuperMart Groceries", items };
+  const stores = storesForCountry(country);
+  const merchant = stores[Math.floor(rand() * stores.length)];
+  return { mode: "mock", merchant, items };
 }

@@ -313,8 +313,8 @@ export function runGovernanceChecks(
             ? `${member.name} חרג/ה מהתקרה החודשית`
             : `${member.name} exceeded their monthly cap`,
           body: he
-            ? `הוצאו ${fmtMoney(Math.round(spent))} מול תקרה של $${member.monthlyCap}.`
-            : `${fmtMoney(Math.round(spent))} spent against a $${member.monthlyCap} cap.`,
+            ? `הוצאו ${fmtMoney(Math.round(spent))} מול תקרה של ${fmtMoney(member.monthlyCap)}.`
+            : `${fmtMoney(Math.round(spent))} spent against a ${fmtMoney(member.monthlyCap)} cap.`,
           memberId: member.id,
         })
       );
@@ -352,8 +352,8 @@ export function runGovernanceChecks(
             ? `חריגה מתקציב בקטגוריה ${HE_CAT[newTx.category]}`
             : `${CATEGORY_MAP[newTx.category].label} over budget`,
           body: he
-            ? `${fmtMoney(Math.round(catSpent))} מול תקרה חודשית של $${cap}.`
-            : `${fmtMoney(Math.round(catSpent))} against a $${cap} monthly cap.`,
+            ? `${fmtMoney(Math.round(catSpent))} מול תקרה חודשית של ${fmtMoney(cap)}.`
+            : `${fmtMoney(Math.round(catSpent))} against a ${fmtMoney(cap)} monthly cap.`,
         })
       );
     }

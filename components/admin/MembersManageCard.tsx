@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { KeyRound, Trash2, UserPlus, Users, X } from "lucide-react";
-import { useFam, useCurrentMember } from "@/lib/store";
+import { useFam, useCurrentMember, useCurrencySymbol } from "@/lib/store";
 import { makeCredential } from "@/lib/auth";
 import { fmtMoney } from "@/lib/format";
 import { useT } from "@/lib/i18n";
@@ -13,6 +13,7 @@ import { fill, Money } from "./i18nNodes";
 const ROLES: Role[] = ["member", "admin"];
 
 export default function MembersManageCard() {
+  const sym = useCurrencySymbol();
   const { t } = useT();
   const members = useFam((s) => s.members);
   const addMember = useFam((s) => s.addMember);
@@ -259,7 +260,7 @@ export default function MembersManageCard() {
                   </label>
                   <div className="relative mt-1" dir="ltr">
                     <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-ink-faint">
-                      $
+                      {sym}
                     </span>
                     <input
                       id="mm-cap"

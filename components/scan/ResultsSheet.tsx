@@ -1,5 +1,7 @@
 "use client";
 
+import { useCurrencySymbol } from "@/lib/store";
+
 import { AnimatePresence, motion } from "framer-motion";
 import { History, Plus, ScanLine, Sparkle, Store, X } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP, CategoryId } from "@/lib/types";
@@ -56,6 +58,7 @@ export default function ResultsSheet({
   const { t } = useT();
   const total = rowTotal(rows);
   const matchedCount = rows.filter((r) => r.matched).length;
+  const sym = useCurrencySymbol();
 
   return (
     <motion.div
@@ -132,7 +135,7 @@ export default function ResultsSheet({
                       physical (left) to match. */}
                   <div className="relative shrink-0" dir="ltr">
                     <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-ink-faint">
-                      $
+                      {sym}
                     </span>
                     <input
                       value={row.price}

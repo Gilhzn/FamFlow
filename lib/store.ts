@@ -13,6 +13,8 @@ import {
   uid,
 } from "./types";
 import { buildSeedState } from "./seed";
+import { setActiveCurrency, currencySymbol, Currency } from "./format";
+import { DEFAULT_COUNTRY } from "./countries";
 import { runGovernanceChecks } from "./insights";
 import { useUI } from "./i18n";
 
@@ -60,6 +62,8 @@ interface FamStore extends LedgerState {
     email: string;
     credential: StoredCredential;
     monthlyBudget: number;
+    currency?: Currency;
+    country?: string;
   }) => Member;
   addMember: (input: {
     name: string;
@@ -85,6 +89,8 @@ interface FamStore extends LedgerState {
   setMemberCap: (memberId: string, cap: number | null) => void;
   setCategoryCap: (cat: CategoryId, cap: number | null) => void;
   setMonthlyBudget: (v: number) => void;
+  setCurrency: (c: Currency) => void;
+  setCountry: (code: string) => void;
   resetDemo: () => void;
 }
 
@@ -132,10 +138,16 @@ function ledgerSlice(s: FamStore): LedgerState {
   };
 }
 
-function emptyRealState(familyName: string, monthlyBudget: number): LedgerState {
+function emptyRealState(
+  familyName: string,
+  monthlyBudget: number,
+  currency: Currency = "USD",
+  country: string = DEFAULT_COUNTRY
+): LedgerState {
   const settings: FamilySettings = {
     familyName,
-    currency: "USD",
+    currency,
+    country,
     monthlyBudget,
     categoryCaps: { food: null, leisure: null, fixed: null, mandatory: null },
   };
@@ -190,6 +202,9 @@ export const useFam = create<FamStore>((set, get) => {
         } catch {}
       }
     }
+    if (!state.settings.country) {
+      state = { ...state, settings: { ...state.settings, country: DEFAULT_COUNTRY } };
+    }
     let session: string | null = null;
     try {
       session = localStorage.getItem(sessionKey(mode));
@@ -234,7 +249,7 @@ export const useFam = create<FamStore>((set, get) => {
       openChannel(mode);
     },
 
-    createFamily: ({ familyName, adminName, email, credential, monthlyBudget }) => {
+    createFamily: ({ familyName, adminName, email, credential, monthlyBudget, currency, country }) => {
       const admin: Member = {
         id: uid("m"),
         name: adminName,
@@ -245,7 +260,7 @@ export const useFam = create<FamStore>((set, get) => {
         credential,
       };
       const state: LedgerState = {
-        ...emptyRealState(familyName, monthlyBudget),
+        ...emptyRealState(familyName, monthlyBudget, currency, country),
         members: [admin],
       };
       writeMode("real");
@@ -422,6 +437,22 @@ export const useFam = create<FamStore>((set, get) => {
       persistAndBroadcast(s.familyMode, next);
     },
 
+    setCurrency: (c) => {
+      const s = get();
+      const settings = { ...s.settings, currency: c };
+      const next = { ...ledgerSlice(s), settings };
+      set({ settings });
+      persistAndBroadcast(s.familyMode, next);
+    },
+
+    setCountry: (code) => {
+      const s = get();
+      const settings = { ...s.settings, country: code };
+      const next = { ...ledgerSlice(s), settings };
+      set({ settings });
+      persistAndBroadcast(s.familyMode, next);
+    },
+
     resetDemo: () => {
       const s = get();
       if (s.familyMode !== "demo") return;
@@ -436,4 +467,16 @@ export function useCurrentMember() {
   const members = useFam((s) => s.members);
   const id = useFam((s) => s.currentMemberId);
   return members.find((m) => m.id === id) ?? null;
+}
+
+// Keep fmtMoney's active currency in lockstep with the family settings.
+if (typeof window !== "undefined") {
+  setActiveCurrency(useFam.getState().settings.currency);
+  useFam.subscribe((s) => setActiveCurrency(s.settings.currency));
+}
+
+/** Reactive currency symbol for input prefixes etc. */
+export function useCurrencySymbol(): string {
+  const currency = useFam((s) => s.settings.currency);
+  return currencySymbol(currency);
 }

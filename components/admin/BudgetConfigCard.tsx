@@ -2,20 +2,25 @@
 
 import { useMemo, useState } from "react";
 import { Check, Pencil, SlidersHorizontal } from "lucide-react";
-import { useFam } from "@/lib/store";
+import { useFam, useCurrencySymbol } from "@/lib/store";
 import { inMonth, sum } from "@/lib/insights";
-import { fmtMoney } from "@/lib/format";
+import { CURRENCIES, CURRENCY_SYMBOLS, fmtMoney } from "@/lib/format";
 import { CATEGORIES, CategoryId } from "@/lib/types";
 import { useT } from "@/lib/i18n";
 import { fill, Money } from "./i18nNodes";
 import CapInput from "./CapInput";
+import CountrySelect from "@/components/CountrySelect";
+import { currencyForCountry, DEFAULT_COUNTRY } from "@/lib/countries";
 
 export default function BudgetConfigCard() {
+  const sym = useCurrencySymbol();
   const { t } = useT();
   const settings = useFam((s) => s.settings);
   const transactions = useFam((s) => s.transactions);
   const setMonthlyBudget = useFam((s) => s.setMonthlyBudget);
   const setCategoryCap = useFam((s) => s.setCategoryCap);
+  const setCurrency = useFam((s) => s.setCurrency);
+  const setCountry = useFam((s) => s.setCountry);
 
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -54,8 +59,56 @@ export default function BudgetConfigCard() {
         </div>
       </div>
 
+      {/* Shopping country — localizes the price-search store chains */}
+      <div className="mt-4 rounded-xl bg-surface-2 px-4 py-3">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="text-xs font-medium text-ink-dim">
+            {t("admin.country.label")}
+          </span>
+        </div>
+        <CountrySelect
+          value={settings.country ?? DEFAULT_COUNTRY}
+          onChange={(code) => {
+            setCountry(code);
+            setCurrency(currencyForCountry(code));
+          }}
+          ariaLabel={t("admin.country.label")}
+        />
+        <p className="mt-1.5 text-[11px] text-ink-faint">
+          {t("admin.country.hint")}
+        </p>
+      </div>
+
+      {/* Family currency */}
+      <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-4 py-3">
+        <span className="text-xs font-medium text-ink-dim">
+          {t("admin.currency.label")}
+        </span>
+        <div className="flex gap-1 rounded-lg bg-surface-1 p-0.5">
+          {CURRENCIES.map((c) => {
+            const sel = settings.currency === c;
+            return (
+              <button
+                key={c}
+                aria-pressed={sel}
+                onClick={() => setCurrency(c)}
+                className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition-all duration-150 ${
+                  sel
+                    ? "bg-accent text-white"
+                    : "text-ink-dim hover:bg-surface-2 hover:text-ink"
+                }`}
+              >
+                <span dir="ltr">
+                  {CURRENCY_SYMBOLS[c]} {t(`admin.currency.${c}`)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Family monthly budget — click to edit */}
-      <div className="mt-4 rounded-xl bg-surface-2 p-4">
+      <div className="mt-3 rounded-xl bg-surface-2 p-4">
         <p className="text-[11px] font-medium uppercase tracking-wide text-ink-faint">
           {t("admin.budget.familyMonthly")}
         </p>
@@ -63,7 +116,7 @@ export default function BudgetConfigCard() {
           <div className="mt-1.5 flex items-center gap-2">
             <div className="relative w-36" dir="ltr">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-ink-faint">
-                $
+                {sym}
               </span>
               <input
                 autoFocus

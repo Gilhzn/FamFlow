@@ -11,10 +11,13 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { useFam } from "@/lib/store";
+import { useFam, useCurrencySymbol } from "@/lib/store";
 import { Member } from "@/lib/types";
 import { useT } from "@/lib/i18n";
 import { isValidEmail, makeCredential, verifySecret } from "@/lib/auth";
+import { CURRENCIES, CURRENCY_SYMBOLS, Currency, fmtMoney } from "@/lib/format";
+import { currencyForCountry, DEFAULT_COUNTRY } from "@/lib/countries";
+import CountrySelect from "@/components/CountrySelect";
 import LangToggle from "@/components/LangToggle";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -32,6 +35,7 @@ export default function LoginScreen() {
   const switchFamilyMode = useFam((s) => s.switchFamilyMode);
   const createFamily = useFam((s) => s.createFamily);
   const { t } = useT();
+  const sym = useCurrencySymbol();
 
   const [view, setView] = useState<View>({ kind: "profiles" });
   const [busy, setBusy] = useState(false);
@@ -46,6 +50,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [budget, setBudget] = useState("5000");
+  const [currency, setCurrencyChoice] = useState<Currency>(
+    currencyForCountry(DEFAULT_COUNTRY)
+  );
+  const [country, setCountryChoice] = useState(DEFAULT_COUNTRY);
 
   function resetTo(v: View) {
     setView(v);
@@ -91,6 +99,8 @@ export default function LoginScreen() {
       email: email.trim(),
       credential,
       monthlyBudget: Math.max(0, parseFloat(budget) || 0) || 5000,
+      currency,
+      country,
     });
     setBusy(false);
   }
@@ -165,7 +175,7 @@ export default function LoginScreen() {
                                 <Users size={12} />
                                 {t("common.member")}
                                 {m.monthlyCap != null &&
-                                  ` ${t("login.capPerMonth", { n: m.monthlyCap })}`}
+                                  ` ${t("login.capPerMonth", { n: fmtMoney(m.monthlyCap) })}`}
                               </>
                             )}
                           </span>
@@ -329,7 +339,7 @@ export default function LoginScreen() {
                 <Field label={t("login.monthlyBudget")}>
                   <div className="relative">
                     <span className="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-faint">
-                      $
+                      {sym}
                     </span>
                     <input
                       inputMode="numeric"
@@ -339,6 +349,38 @@ export default function LoginScreen() {
                       }
                       className="input tabular ps-7"
                     />
+                  </div>
+                </Field>
+                <Field label={t("login.country")}>
+                  <CountrySelect
+                    value={country}
+                    onChange={(code) => {
+                      setCountryChoice(code);
+                      setCurrencyChoice(currencyForCountry(code));
+                    }}
+                    ariaLabel={t("login.country")}
+                  />
+                </Field>
+                <Field label={t("login.currency")}>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {CURRENCIES.map((c) => {
+                      const sel = currency === c;
+                      return (
+                        <button
+                          key={c}
+                          type="button"
+                          aria-pressed={sel}
+                          onClick={() => setCurrencyChoice(c)}
+                          className={`rounded-xl px-2 py-2 text-sm font-semibold transition-all duration-150 ${
+                            sel
+                              ? "bg-accent text-white"
+                              : "bg-surface-2 text-ink-dim hover:bg-surface-3"
+                          }`}
+                        >
+                          <span dir="ltr">{CURRENCY_SYMBOLS[c]} {c}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </Field>
               </div>

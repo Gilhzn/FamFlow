@@ -1,5 +1,7 @@
 "use client";
 
+import { useCurrencySymbol } from "@/lib/store";
+
 import { motion } from "framer-motion";
 import { Check, PencilLine, Search, Store } from "lucide-react";
 import { CATEGORIES, CategoryId } from "@/lib/types";
@@ -41,6 +43,7 @@ export default function ProductResults({
   const parsed = parseFloat(price);
   const valid = Number.isFinite(parsed) && parsed > 0 && productName.trim();
   const cheapest = offers[0]?.price;
+  const sym = useCurrencySymbol();
 
   return (
     <motion.div
@@ -134,7 +137,7 @@ export default function ProductResults({
         </label>
         <div className="relative" dir="ltr">
           <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-faint">
-            $
+            {sym}
           </span>
           <input
             value={price}

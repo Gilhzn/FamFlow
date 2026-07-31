@@ -58,6 +58,7 @@ export default function ScanPage() {
   const { t } = useT();
   const me = useCurrentMember();
   const transactions = useFam((s) => s.transactions);
+  const country = useFam((s) => s.settings.country);
   const addTransaction = useFam((s) => s.addTransaction);
 
   const [phase, setPhase] = useState<Phase>("capture");
@@ -128,7 +129,7 @@ export default function ScanPage() {
     setPhase("analyzing");
     setStep(0);
     try {
-      const request = mockProductSearch(image.base64);
+      const request = mockProductSearch(image.base64, country);
       await sleep(450);
       setStep(1); // searching images
       await sleep(650);
@@ -145,7 +146,7 @@ export default function ScanPage() {
       setError("scan.errAnalyze");
       setPhase("capture");
     }
-  }, [image]);
+  }, [image, country]);
 
   const selectOffer = useCallback((o: ProductOffer) => {
     setSelectedOfferId(o.id);
@@ -201,7 +202,7 @@ export default function ScanPage() {
             }),
           });
         } catch {
-          return mockExtract(image.base64); // no server reachable
+          return mockExtract(image.base64, country); // no server reachable
         }
         if (res.ok) return res.json();
         // Our API route always returns a JSON {error} body. Anything else
@@ -212,7 +213,7 @@ export default function ScanPage() {
           .json()
           .then((j) => typeof j?.error === "string")
           .catch(() => false);
-        if (!isApiError) return mockExtract(image.base64);
+        if (!isApiError) return mockExtract(image.base64, country);
         throw new Error(`Vision API returned ${res.status}`);
       })();
 
@@ -252,7 +253,7 @@ export default function ScanPage() {
       setError("scan.errAnalyze");
       setPhase("capture");
     }
-  }, [image, transactions]);
+  }, [image, transactions, country]);
 
   const handleRowChange = useCallback(
     (id: string, patch: Partial<Pick<EditableRow, "name" | "price">>) => {

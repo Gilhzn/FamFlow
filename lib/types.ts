@@ -83,7 +83,8 @@ export interface WalletCard {
 
 export interface FamilySettings {
   familyName: string;
-  currency: string; // "USD"
+  currency: string; // "USD" | "ILS" | "EUR"
+  country?: string; // ISO-3166 alpha-2, localizes the price-search stores
   monthlyBudget: number; // family-wide budget
   categoryCaps: Record<CategoryId, number | null>;
 }

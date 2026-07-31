@@ -1,5 +1,7 @@
 "use client";
 
+import { useCurrencySymbol } from "@/lib/store";
+
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n";
 
@@ -23,6 +25,7 @@ export default function CapInput({
   // Escape triggers blur, but the blur handler closes over the pre-revert
   // text — this flag makes the resulting blur a no-op instead of a commit.
   const canceling = useRef(false);
+  const sym = useCurrencySymbol();
 
   useEffect(() => {
     if (!focused) setText(value == null ? "" : String(value));
@@ -38,7 +41,7 @@ export default function CapInput({
   return (
     <div className="relative w-[104px] shrink-0" dir="ltr">
       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-ink-faint">
-        $
+        {sym}
       </span>
       <input
         aria-label={ariaLabel}

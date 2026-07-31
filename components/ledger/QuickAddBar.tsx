@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { CATEGORIES, CategoryId } from "@/lib/types";
-import { useFam, useCurrentMember } from "@/lib/store";
+import { useFam, useCurrentMember, useCurrencySymbol } from "@/lib/store";
 import { useT } from "@/lib/i18n";
 
 /** Segmented quick-add bar — instant optimistic manual entry. */
@@ -15,6 +15,7 @@ export default function QuickAddBar() {
   const [label, setLabel] = useState("");
   const [cat, setCat] = useState<CategoryId>("food");
   const amountRef = useRef<HTMLInputElement>(null);
+  const sym = useCurrencySymbol();
 
   const parsed = parseFloat(amount);
   const valid =
@@ -44,7 +45,7 @@ export default function QuickAddBar() {
         <div className="flex gap-2.5">
           <div className="relative w-28 shrink-0">
             <span className="pointer-events-none absolute start-3.5 top-1/2 -translate-y-1/2 text-sm text-ink-faint">
-              $
+              {sym}
             </span>
             <input
               ref={amountRef}
