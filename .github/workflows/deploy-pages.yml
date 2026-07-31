@@ -8,16 +8,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,32 +29,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Configure Pages
-        id: pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
       - name: Build static export
         run: |
           # API routes cannot be statically exported — the client falls back
           # to its labeled mock-vision path when the route is absent.
           rm -rf app/api
           npx next build
+          touch out/.nojekyll
         env:
           STATIC_EXPORT: "1"
-          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          BASE_PATH: /FamFlow
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Publish to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: out
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          force_orphan: true
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Point Pages at the gh-pages branch
+        run: |
+          curl -sS -X PUT \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/pages \
+            -d '{"build_type":"legacy","source":{"branch":"gh-pages","path":"/"}}' \
+            || echo "::warning::Pages source switch failed — set Settings → Pages → Source to gh-pages manually"
